@@ -311,17 +311,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b6a4ceb84e0f8d4898e9dc869b44af2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CrystalPrefab:
-  - {fileID: 1011319553682498, guid: 8ad137f6808375f4e885d60451f0c4fc, type: 3}
-  - {fileID: 1829549426458922, guid: f035235bfe0fb5d48b6f85818f4f000e, type: 3}
-  - {fileID: 1936286286358838, guid: 03fc9d38e2dd7c343baa918a99f6d833, type: 3}
-  - {fileID: 1870747671944572, guid: ff31047102e4ad54da5383aa244844cf, type: 3}
-  - {fileID: 1747119322251336, guid: ee88617da51e3e8479a812f9d58a94be, type: 3}
-  - {fileID: 1864742499577446, guid: 4aa7f4f0acab60742bea9a9f6a3bb144, type: 3}
-  - {fileID: 1288543304402976, guid: 67c6e02e204ef6244a8f475a94826851, type: 3}
-  - {fileID: 1591381487688778, guid: da6e8bbd483d22c449e703a7e40afde4, type: 3}
-  - {fileID: 1305964118088936, guid: 5f285e9508d4e3f4488b284bb80a0b9b, type: 3}
-  - {fileID: 1294500603521610, guid: 227f9257bcc7175478a7f935e3bfc552, type: 3}
+  Boards:
+  - {fileID: 5730713804920128683, guid: 9ab538287db1aec4b81e4929ca274de6, type: 3}
+  - {fileID: 3337331536781653622, guid: d6b27a0ac262c114b9d41bfbdb4ea10b, type: 3}
 --- !u!4 &1518185182
 Transform:
   m_ObjectHideFlags: 0
