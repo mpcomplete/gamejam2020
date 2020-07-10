@@ -1,24 +1,25 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 
 public class Game : MonoBehaviour {
-    [Header("Prefabs")]
+  [Header("Prefabs")]
 
-    [SerializeField] Board[] Boards = null;
+  [SerializeField] Board[] Boards = null;
 
-    Board Board;
+  Board Board;
 
-    void Start()
-    {
-      Board = Instantiate(Boards[0]);
-    }
+  void Start() {
+    Board = Instantiate(Boards[0]);
+  }
 
-    void Update() {
-      if (Input.GetKeyDown(KeyCode.Space))
-      {
+  void Update() {
+    KeyCode[] levelCodes = { KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3 };
+    for (int i = 0; i < levelCodes.Length; i++) {
+      if (Input.GetKeyDown(levelCodes[i])) {
         Destroy(Board.gameObject);
-        Board = Instantiate(Boards[1]);
+        Board = Instantiate(Boards[i]);
+        break;
       }
     }
+  }
 }
