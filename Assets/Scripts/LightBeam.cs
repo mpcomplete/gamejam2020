@@ -73,6 +73,7 @@ public class LightBeam : MonoBehaviour
         }
     }
 
+    [ContextMenu("Render")]
     public void Render()
     {
         int count = GridPositions.Count; 
