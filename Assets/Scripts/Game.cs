@@ -1,24 +1,20 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Game : MonoBehaviour {
-    [Header("Prefabs")]
+  [Header("Prefabs")]
 
-    [SerializeField] Board[] Boards = null;
+  [SerializeField] Board[] Boards = null;
 
-    Board Board;
+  Board Board;
 
-    void Start()
-    {
-      Board = Instantiate(Boards[0]);
+  void Start() {
+    Board = Instantiate(Boards[0]);
+  }
+
+  void Update() {
+    if (Input.GetKeyDown(KeyCode.Space)) {
+      Destroy(Board.gameObject);
+      Board = Instantiate(Boards[1]);
     }
-
-    void Update() {
-      if (Input.GetKeyDown(KeyCode.Space))
-      {
-        Destroy(Board.gameObject);
-        Board = Instantiate(Boards[1]);
-      }
-    }
+  }
 }

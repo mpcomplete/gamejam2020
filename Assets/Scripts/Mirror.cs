@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
 
-public class Mirror : MonoBehaviour
-{
+public class Mirror : MonoBehaviour {
 }
