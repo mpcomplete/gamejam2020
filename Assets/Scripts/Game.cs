@@ -33,7 +33,7 @@ public class Game : MonoBehaviour {
   [Header("Gameplay")]
   [SerializeField] float BeatPeriodInMS = 1000f;
 
-  int BoardIndex = -1;
+  int BoardIndex = 0;
   GameState State = GameState.CompletedBoard;
 
   void Start() {

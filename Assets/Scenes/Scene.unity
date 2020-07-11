@@ -131,7 +131,7 @@ PrefabInstance:
     - target: {fileID: 235309603451670221, guid: c8558f1798e2f1e48b8c5f207d51667f,
         type: 3}
       propertyPath: m_Name
-      value: Level0
+      value: Level1
       objectReference: {fileID: 0}
     - target: {fileID: 617848308622302180, guid: c8558f1798e2f1e48b8c5f207d51667f,
         type: 3}
@@ -956,6 +956,7 @@ MonoBehaviour:
   BeatAudioSource: {fileID: 458831317}
   Board: {fileID: 358684634}
   Boards:
+  - {fileID: 8090770210332311632, guid: c8558f1798e2f1e48b8c5f207d51667f, type: 3}
   - {fileID: 1037489852600292468, guid: d2f1641e8afc45f42860bf6e0de4e8f5, type: 3}
   SelectionIndicator: {fileID: 7343528108515389431}
   LineRenderers:
@@ -1510,7 +1511,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 5000
-  field of view: 33.73363
+  field of view: 33.72452
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
