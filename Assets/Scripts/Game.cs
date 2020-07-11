@@ -11,31 +11,49 @@ public class Game : MonoBehaviour {
     new Vector2Int(1, -1),  // south east
     new Vector2Int(0, -1),  // south
     new Vector2Int(-1, -1), // south west
-    new Vector2Int(-1, 0),   // west
-    new Vector2Int(-1, 1)    // north west
+    new Vector2Int(-1, 0),  // west
+    new Vector2Int(-1, 1)   // north west
   };
 
   [Header("Boards")]
-  [SerializeField] Board[] Boards = null;
+  [SerializeField] 
+  Board[] Boards = null;
 
-  [Header("Pools")] [SerializeField] LineRenderer[] LineRenderers = null;
+  [Header("Pools")] 
+  [SerializeField] 
+  LineRenderer[] LineRenderers = null;
   int LineRendererIndex = 0;
 
-  public LightNode LightTree;
+  [Header("UI")]
+  [SerializeField]
+  BoardCompleteOverlay BoardCompleteOverlay = null;
+
+  LightNode LightTree;
 
   Board Board;
+  int BoardIndex = 0;
 
   void Start() {
     Board = Instantiate(Boards[0]);
+    BoardCompleteOverlay.ClickableRegion.onClick.AddListener(LoadNextBoard);
+  }
+
+  void OnDestroy() {
+    BoardCompleteOverlay.ClickableRegion.onClick.RemoveListener(LoadNextBoard);
+  }
+
+  [ContextMenu("Load Next Board")]
+  public void LoadNextBoard()
+  {
+    int nextBoardIndex = BoardIndex + 1 >= Boards.Length ? 0 : BoardIndex + 1;
+
+    Destroy(Board.gameObject);
+    BoardIndex = nextBoardIndex;
+    Board = Instantiate(Boards[BoardIndex]);
   }
 
   public static Vector3 GridToWorldPosition(Vector2Int gp) {
     return new Vector3(gp.x, 1, gp.y);
-  }
-
-  // Temporary "fake" reflection stuff
-  public static Vector2Int ReflectedHeading(Vector2Int heading) {
-    return new Vector2Int(heading.y, heading.x);
   }
 
   public static LightNode MarchLightTree(Board board, Vector2Int origin, int heading, int maxDepth) {
@@ -55,7 +73,6 @@ public class Game : MonoBehaviour {
     Vector2Int vHeading = Vector2IntHeadings[beam.Heading];
     Vector2Int nextCell = position + vHeading;
 
-    // TODO: is this totally correct?
     if (depth >= maxDepth) {
       return new LightNode { Depth = depth, Position = nextCell };
     }
@@ -68,8 +85,8 @@ public class Game : MonoBehaviour {
 
     if (target && target.TryGetComponent(out Mirror mirror)) {
       LightNode targetNode = new LightNode { Depth = depth, Position = nextCell };
-
       LightBeam[] beams = mirror.OnCollide(beam);
+
       foreach (LightBeam newbeam in beams) {
         targetNode.LightBeams.Add(newbeam);
       }
@@ -83,7 +100,6 @@ public class Game : MonoBehaviour {
     }
   }
 
-  int count = 0;
   void RenderLightTree(LightNode tree) {
     for (int i = 0; i < tree.LightBeams.Count; i++) {
       LightBeam lb = tree.LightBeams[i];
@@ -92,9 +108,6 @@ public class Game : MonoBehaviour {
       Vector3 origin = GridToWorldPosition(tree.Position);
       Vector3 destination = GridToWorldPosition(ln.Position);
 
-      count++;
-
-      // need to position this line renderer in world space
       lr.gameObject.SetActive(true);
       lr.positionCount = 2;
       lr.SetPosition(0, origin);
@@ -134,9 +147,7 @@ public class Game : MonoBehaviour {
     }
 
     const int MAX_DEPTH = 6;
-    LightTree = MarchLightTree(Board, Vector2Int.zero, 0, MAX_DEPTH);
-
-    count = 0;
+    LightTree = MarchLightTree(Board, Board.GetStartLightCell(), 0, MAX_DEPTH);
     LineRendererIndex = 0;
     RenderLightTree(LightTree);
     DisableUnusedLineRenderers();
