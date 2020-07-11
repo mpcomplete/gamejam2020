@@ -24,10 +24,7 @@ public class Mirror : LightStrikeableBase {
     int outputOrientation = reflectionMap[adjustedInput];
     if (outputOrientation != -1) {
       int adjustedOutput = (outputOrientation + (int)this.Orientation) % 16;
-      if (Game.DoDebug) {
-        Debug.Log($"mirror {Orientation}: {input.Heading} => {adjustedInput} reflects {outputOrientation} => {adjustedOutput} => {adjustedOutput / 2}");
-        Game.DoDebug = false;
-      }
+
       result.Add(new LightBeam { Color = input.Color, Heading = adjustedOutput / 2 });
     }
     return result;

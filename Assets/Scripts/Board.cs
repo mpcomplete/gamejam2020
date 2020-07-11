@@ -9,11 +9,11 @@ public class Board : MonoBehaviour {
   public AudioClip WinningMusic;
 
   public Vector2Int GetLightSourceCell() {
-    return getObjectCell(LightSource.gameObject);
+    return GetObjectCell(LightSource.gameObject);
   }
 
   public Vector2Int GetLightSinkCell() {
-    return getObjectCell(LightSink.gameObject);
+    return GetObjectCell(LightSink.gameObject);
   }
 
   public bool OutOfBounds(Vector2Int v) {
@@ -31,14 +31,14 @@ public class Board : MonoBehaviour {
   // TODO: unity raycast may be better.
   public GameObject GetObjectAtCell(Vector2Int cell) {
     foreach (GameObject obj in GetChildren()) {
-      if (getObjectCell(obj) == cell)
+      if (GetObjectCell(obj) == cell)
         return obj;
     }
     return null;
   }
 
   // Returns the cell position for the given object. Assumes its parent transform is the Board's.
-  Vector2Int getObjectCell(GameObject obj) {
+  public Vector2Int GetObjectCell(GameObject obj) {
     return new Vector2Int((int)obj.transform.position.x, (int)obj.transform.position.z);
   }
 }

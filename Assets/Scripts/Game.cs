@@ -1,6 +1,4 @@
-﻿using Cinemachine.Utility;
-using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Game : MonoBehaviour {
   public static Vector2Int[] Vector2IntHeadings = new Vector2Int[8] {
@@ -24,7 +22,8 @@ public class Game : MonoBehaviour {
   [SerializeField] Board Board = null;
   [SerializeField] Board[] Boards = null;
 
-  [Header("Pools")]
+  [Header("Scene Objects")]
+  [SerializeField] SelectionIndicator SelectionIndicator = null;
   [SerializeField] LineRenderer[] LineRenderers = null;
   int LineRendererIndex = 0;
 
@@ -125,30 +124,80 @@ public class Game : MonoBehaviour {
     }
   }
 
-  public static bool DoDebug = false;
+  public static KeyCode[] ObjectSelectionKeyCodes = new KeyCode[9]
+  {
+    KeyCode.Alpha1, 
+    KeyCode.Alpha2, 
+    KeyCode.Alpha3,
+    KeyCode.Alpha4,
+    KeyCode.Alpha5,
+    KeyCode.Alpha6,
+    KeyCode.Alpha7,
+    KeyCode.Alpha8,
+    KeyCode.Alpha9
+  };
+
+  public static KeyCode[] MovementKeyCodes = new KeyCode[4]
+  {
+    KeyCode.W,
+    KeyCode.D,
+    KeyCode.S,
+    KeyCode.A
+  };
+
+  public static Vector2Int[] MovementDirections = new Vector2Int[4]
+  {
+    Vector2Int.up,
+    Vector2Int.right,
+    Vector2Int.down,
+    Vector2Int.left
+  };
+
+  Mirror SelectedMirror = null;
 
   void Update() {
+    float dt = Time.deltaTime;
+
     switch (State) {
     case GameState.ActiveBoard: {
-        KeyCode[] levelCodes = { KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3 };
-        for (int i = 0; i < levelCodes.Length; i++) {
-          if (Input.GetKeyDown(levelCodes[i])) {
-            Destroy(Board.gameObject);
-            Board = Instantiate(Boards[i]);
-            break;
+        Mirror[] mirrors = Board.GetComponentsInChildren<Mirror>();
+
+        for (int i = 0; i < mirrors.Length; i++) {
+          if (Input.GetKeyDown(ObjectSelectionKeyCodes[i])) {
+            SelectedMirror = mirrors[i];
           }
         }
 
-        KeyCode[] mirrorCodes = { KeyCode.Q, KeyCode.W, KeyCode.E };
-        for (int i = 0; i < mirrorCodes.Length; i++) {
-          if (Input.GetKeyDown(mirrorCodes[i])) {
-            Mirror[] mirrors = Board.GetComponentsInChildren<Mirror>();
-            if (mirrors != null && i < mirrors.Length) {
-              int dir = Input.GetKey(KeyCode.LeftShift) ? -1 : 1;
-              mirrors[i].Orientation = mirrors[i].Orientation + dir;
-              DoDebug = true;
+        for (int i = 0; i < MovementDirections.Length; i++) {
+          if (Input.GetKeyDown(MovementKeyCodes[i]) && SelectedMirror) {
+            Vector2Int currentPosition = Board.GetObjectCell(SelectedMirror.gameObject);
+            Vector2Int direction = MovementDirections[i];
+            Vector2Int nextCell = currentPosition + direction;
+
+            if (Board.OutOfBounds(nextCell))
+            {
+              Debug.Log("Cannot move out of bounds, silly!");
+            }
+            else
+            {
+              SelectedMirror.transform.position = GridToWorldPosition(nextCell);
             }
           }
+        }
+
+        if (SelectedMirror)
+        {
+          Vector2Int selectedGridCell = Board.GetObjectCell(SelectedMirror.gameObject);
+          Vector3 selectedPosition = Vector3.up + GridToWorldPosition(selectedGridCell);
+          Vector3 currentPosition = SelectionIndicator.transform.position;
+
+          SelectionIndicator.gameObject.SetActive(true);
+          // TODO: Slightly bad behavior... probably should happen in FixedUpdate
+          SelectionIndicator.MoveTowards(dt, selectedPosition);
+        }
+        else
+        {
+          SelectionIndicator.gameObject.SetActive(false);
         }
 
         BoardCompleteOverlay.gameObject.SetActive(false);
@@ -162,7 +211,9 @@ public class Game : MonoBehaviour {
       }
       break;
 
-    case GameState.CompletedBoard:
+    case GameState.CompletedBoard: {
+      SelectionIndicator.gameObject.SetActive(false);
+      }
       break;
     }
 
