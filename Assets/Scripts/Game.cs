@@ -174,19 +174,13 @@ public class Game : MonoBehaviour {
             Vector2Int direction = MovementDirections[i];
             Vector2Int nextCell = currentPosition + direction;
 
-            if (Board.OutOfBounds(nextCell))
-            {
-              Debug.Log("Cannot move out of bounds, silly!");
-            }
-            else
-            {
+            if (Board.ValidMoveLocation(nextCell)) {
               SelectedMirror.transform.position = GridToWorldPosition(nextCell);
             }
           }
         }
 
-        if (SelectedMirror)
-        {
+        if (SelectedMirror) {
           Vector2Int selectedGridCell = Board.GetObjectCell(SelectedMirror.gameObject);
           Vector3 selectedPosition = Vector3.up + GridToWorldPosition(selectedGridCell);
           Vector3 currentPosition = SelectionIndicator.transform.position;
@@ -194,9 +188,7 @@ public class Game : MonoBehaviour {
           SelectionIndicator.gameObject.SetActive(true);
           // TODO: Slightly bad behavior... probably should happen in FixedUpdate
           SelectionIndicator.MoveTowards(dt, selectedPosition);
-        }
-        else
-        {
+        } else {
           SelectionIndicator.gameObject.SetActive(false);
         }
 

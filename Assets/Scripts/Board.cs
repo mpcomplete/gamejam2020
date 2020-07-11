@@ -16,6 +16,11 @@ public class Board : MonoBehaviour {
     return GetObjectCell(LightSink.gameObject);
   }
 
+  public bool ValidMoveLocation(Vector2Int v)
+  {
+    return !OutOfBounds(v) && (GetObjectAtCell(v) == null);
+  }
+
   public bool OutOfBounds(Vector2Int v) {
       return v.x < Min.x || v.y < Min.y || v.x > Max.x || v.y > Max.y;
   }
