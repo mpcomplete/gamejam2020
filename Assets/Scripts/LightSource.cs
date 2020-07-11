@@ -17,5 +17,8 @@ public class LightSource : LightStrikeableBase {
   public override void OnQuarterBeat(int counter) {
     if (counter%4 == 0)
       headings[0] = (headings[0]+1) % 8;
+    if (counter%4 == 0 || counter%4 == 1)
+      headings[1] = (headings[1]+1) % 8;
+    headings[2] = (headings[2]+1) % 8;
   }
 }
