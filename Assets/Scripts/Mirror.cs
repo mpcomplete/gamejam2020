@@ -18,6 +18,6 @@ public class Mirror : MonoBehaviour {
       int adjustedOutput = (outputOrientation - (int)this.orientation) % 16;
       return new LightBeam[] { new LightBeam { Color = input.Color, Heading = adjustedOutput / 2 } };
     }
-    return null;
+    return new LightBeam[] { };
   }
 }

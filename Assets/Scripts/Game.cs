@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 
 public class Game : MonoBehaviour {
-  public static Vector2Int[] Vector2IntHeadings = new Vector2Int[8] 
+  public static Vector2Int[] Vector2IntHeadings = new Vector2Int[8]
   {
     new Vector2Int(0, 1),   // north
     new Vector2Int(1, 1),   // north east
@@ -45,8 +45,7 @@ public class Game : MonoBehaviour {
     rootNode.LightBeams.Add(new LightBeam { Color = Color.green, Heading = 0 });
     rootNode.LightBeams.Add(new LightBeam { Color = Color.blue, Heading = 0 });
 
-    foreach (LightBeam lightBeam in rootNode.LightBeams)
-    {
+    foreach (LightBeam lightBeam in rootNode.LightBeams) {
       rootNode.LightNodes.Add(March(board, origin, lightBeam, 1, maxDepth));
     }
     return rootNode;
@@ -57,8 +56,7 @@ public class Game : MonoBehaviour {
     Vector2Int nextCell = position + vHeading;
 
     // TODO: is this totally correct?
-    if (depth >= maxDepth)
-    {
+    if (depth >= maxDepth) {
       return new LightNode { Depth = depth, Position = nextCell };
     }
 
@@ -68,23 +66,19 @@ public class Game : MonoBehaviour {
 
     GameObject target = board.GetObjectAtCell(nextCell);
 
-    if (target && target.GetComponent<Mirror>()) {
+    if (target && target.TryGetComponent(out Mirror mirror)) {
       LightNode targetNode = new LightNode { Depth = depth, Position = nextCell };
 
-      // add an outgoing beam in every direction for luls
-      for (int i = 0; i < 8; i++)
-      {
-        targetNode.LightBeams.Add(new LightBeam { Heading = i, Color = Color.yellow });
+      LightBeam[] beams = mirror.OnCollide(beam);
+      foreach (LightBeam newbeam in beams) {
+        targetNode.LightBeams.Add(newbeam);
       }
 
-      foreach (LightBeam lb in targetNode.LightBeams)
-      {
+      foreach (LightBeam lb in targetNode.LightBeams) {
         targetNode.LightNodes.Add(March(board, nextCell, lb, depth + 1, maxDepth));
       }
       return targetNode;
-    }
-    else
-    {
+    } else {
       return March(board, nextCell, beam, depth, maxDepth);
     }
   }
@@ -93,7 +87,7 @@ public class Game : MonoBehaviour {
   void RenderLightTree(LightNode tree) {
     for (int i = 0; i < tree.LightBeams.Count; i++) {
       LightBeam lb = tree.LightBeams[i];
-      LightNode ln = tree.LightNodes[i]; 
+      LightNode ln = tree.LightNodes[i];
       LineRenderer lr = LineRenderers[LineRendererIndex++];
       Vector3 origin = GridToWorldPosition(tree.Position);
       Vector3 destination = GridToWorldPosition(ln.Position);
@@ -122,6 +116,15 @@ public class Game : MonoBehaviour {
         Destroy(Board.gameObject);
         Board = Instantiate(Boards[i]);
         break;
+      }
+    }
+
+    if (Input.GetKeyDown(KeyCode.Z)) {
+      Mirror firstMirror = Board.GetComponentInChildren<Mirror>();
+      if (firstMirror) {
+        Vector3 angles = firstMirror.transform.eulerAngles;
+        angles.y += 22.5f;
+        firstMirror.transform.eulerAngles = angles;
       }
     }
 
