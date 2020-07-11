@@ -1,15 +1,14 @@
 ﻿using UnityEngine;
 
 public enum LightBeamColor {
-  black = 0,
-  red,
+  red = 1,
   blue,
   green,
 }
 
 [System.Serializable]
 public class LightBeam {
-  public LightBeamColor Color = LightBeamColor.black;
+  public LightBeamColor Color = LightBeamColor.red;
   public int Heading = 0;
 
   static public readonly Color[] BeamColorToEmissionColor = {

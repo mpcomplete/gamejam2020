@@ -54,6 +54,9 @@ public class Game : MonoBehaviour {
     SelectedMirror = Board.GetComponentInChildren<Mirror>();
     State = GameState.ActiveBoard;
     MusicAudioSource.Stop();
+    beatTimer = 0;
+    quarterBeats = 0;
+    Debug.Log($"Starting board with heading={Board.LightSource.Heading}, beat={quarterBeats}, {beatTimer}");
   }
 
   public static Vector3 GridToWorldPosition(Vector2Int gp) {
@@ -159,8 +162,12 @@ public class Game : MonoBehaviour {
     switch (State) {
     case GameState.ActiveBoard: {
         Mirror[] mirrors = Board.GetComponentsInChildren<Mirror>();
+
+        // Debug stuff.
         if (Input.GetKeyDown(KeyCode.Delete))
           LoadNextBoard();
+        if (Input.GetKeyDown(KeyCode.Space))
+          OnQuarterBeat();
 
         for (int i = 0; i < mirrors.Length; i++) {
           if (Input.GetKeyDown(ObjectSelectionKeyCodes[i])) {
