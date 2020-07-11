@@ -48,10 +48,8 @@ public class Game : MonoBehaviour {
 
   [ContextMenu("Load Next Board")]
   public void LoadNextBoard() {
-    int nextBoardIndex = BoardIndex + 1 >= Boards.Length ? 0 : BoardIndex + 1;
-
     Destroy(Board.gameObject);
-    BoardIndex = nextBoardIndex;
+    BoardIndex = (BoardIndex + 1) % Boards.Length;
     Board = Instantiate(Boards[BoardIndex]);
     State = GameState.ActiveBoard;
     MusicAudioSource.Stop();

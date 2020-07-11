@@ -21,7 +21,7 @@ public class Prism : LightStrikeableBase {
   }
 
   public override void OnQuarterBeat(int counter) {
-    if (counter%4 == 1)
+    if (counter%4 == 2)
       Orientation += 1;
   }
 }
