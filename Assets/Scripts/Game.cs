@@ -115,6 +115,7 @@ public class Game : MonoBehaviour {
       lr.positionCount = 2;
       lr.SetPosition(0, origin);
       lr.SetPosition(1, destination);
+      // TODO: maybe cache materials per lb.Color.
       lr.material.SetColor("_EmissionColor", lb.EmissionColor());
       RenderLightTree(ln);
     }
