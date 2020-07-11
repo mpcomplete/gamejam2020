@@ -14,9 +14,18 @@ public enum LightBeamColor {
 
 [System.Serializable]
 public class LightBeam {
-  public LightBeamColor Color = LightBeamColor.red;
+  public LightBeamColor Color = LightBeamColor.white;
   public int Heading = 0;
 
+  static public LightBeamColor[] Colors = {
+    LightBeamColor.red,
+    LightBeamColor.green,
+    LightBeamColor.blue,
+    LightBeamColor.yellow,
+    LightBeamColor.purple,
+    LightBeamColor.cyan,
+    LightBeamColor.white,
+  };
   public Color EmissionColor() {
     switch (Color) {
     case LightBeamColor.red: return UnityEngine.Color.red*1.8f;
