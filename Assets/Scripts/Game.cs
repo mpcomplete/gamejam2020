@@ -219,10 +219,14 @@ public class Game : MonoBehaviour {
   float beatTimer = 0f;
   int quarterBeats = 0;
   void FixedUpdate() {
-    float quarterPeriod = BeatPeriodInMS / 1000f / 4f;
-    while (beatTimer < Time.time) {
-      OnQuarterBeat();
-      beatTimer += quarterPeriod;
+    switch (State) {
+    case GameState.ActiveBoard:
+      float quarterPeriod = BeatPeriodInMS / 1000f / 4f;
+      while (beatTimer < Time.time) {
+        OnQuarterBeat();
+        beatTimer += quarterPeriod;
+      }
+      break;
     }
   }
 
