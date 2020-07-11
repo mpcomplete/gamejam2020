@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 
 public class LightSource : LightStrikeableBase {
-  readonly Color[] colors = { Color.red, Color.green, Color.blue };
+  readonly LightBeamColor[] colors = { LightBeamColor.red, LightBeamColor.green, LightBeamColor.blue };
   int[] headings = { 1, 2, 3 };
 
   public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {

@@ -115,7 +115,7 @@ public class Game : MonoBehaviour {
       lr.positionCount = 2;
       lr.SetPosition(0, origin);
       lr.SetPosition(1, destination);
-      lr.material.SetColor("_EmissionColor", lb.Color*1.8f);
+      lr.material.SetColor("_EmissionColor", lb.EmissionColor());
       RenderLightTree(ln);
     }
   }
