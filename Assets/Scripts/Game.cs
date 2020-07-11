@@ -18,6 +18,7 @@ public class Game : MonoBehaviour {
 
   [Header("Audio")]
   [SerializeField] AudioSource MusicAudioSource = null;
+  [SerializeField] AudioSource BeatAudioSource = null;
 
   [Header("Boards")]
   [SerializeField] Board[] Boards = null;
@@ -28,6 +29,9 @@ public class Game : MonoBehaviour {
 
   [Header("UI")]
   [SerializeField] BoardCompleteOverlay BoardCompleteOverlay = null;
+
+  [Header("Gameplay")]
+  [SerializeField] float BeatPeriodInMS = 1000f;
 
   Board Board;
   int BoardIndex = 0;
@@ -169,5 +173,19 @@ public class Game : MonoBehaviour {
     LineRendererIndex = 0;
     RenderLightTree(LightTree);
     DisableUnusedLineRenderers();
+  }
+
+  float beatTimer = 0f;
+  void FixedUpdate() {
+    float period = BeatPeriodInMS / 1000f;
+    while (beatTimer < Time.time) {
+      OnBeat();
+      beatTimer += period;
+    }
+  }
+
+  // Called once per "beat", defined by BeatPeriodInMS.
+  public void OnBeat() {
+    BeatAudioSource.Play();
   }
 }
