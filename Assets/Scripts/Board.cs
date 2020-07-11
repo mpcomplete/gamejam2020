@@ -1,22 +1,17 @@
 ﻿using UnityEngine;
 
 public class Board : MonoBehaviour {
-  public GameObject StartLight;
-  public GameObject GoalLight;
+  public LightSource LightSource;
+  public LightSink LightSink;
   public Vector2Int Min = Vector2Int.zero;
   public Vector2Int Max = new Vector2Int(9, 9);
 
-  void Start() {
-    Debug.Log($"starty: {this.GetStartLightCell()}");
-    Debug.Log($"3,5: {this.GetObjectAtCell(new Vector2Int(3, 5))}");
+  public Vector2Int GetLightSourceCell() {
+    return getObjectCell(LightSource.gameObject);
   }
 
-  public Vector2Int GetStartLightCell() {
-    return getObjectCell(StartLight);
-  }
-
-  public Vector2Int GetGoalLightCell() {
-    return getObjectCell(GoalLight);
+  public Vector2Int GetLightSinkCell() {
+    return getObjectCell(LightSink.gameObject);
   }
 
   public bool OutOfBounds(Vector2Int v) {

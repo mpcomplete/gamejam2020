@@ -142,7 +142,7 @@ public class Game : MonoBehaviour {
     }
 
     const int MAX_DEPTH = 6;
-    LightTree = MarchLightTree(Board, Board.GetStartLightCell(), 0, MAX_DEPTH);
+    LightTree = MarchLightTree(Board, Board.GetLightSourceCell(), 0, MAX_DEPTH);
     LineRendererIndex = 0;
     RenderLightTree(LightTree);
     DisableUnusedLineRenderers();
