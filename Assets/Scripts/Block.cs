@@ -1,0 +1,2 @@
+﻿public class Block : LightStrikeableBase {
+}

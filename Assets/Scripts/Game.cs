@@ -126,10 +126,9 @@ public class Game : MonoBehaviour {
     }
   }
 
-  public static KeyCode[] ObjectSelectionKeyCodes = new KeyCode[9]
-  {
-    KeyCode.Alpha1, 
-    KeyCode.Alpha2, 
+  public static KeyCode[] ObjectSelectionKeyCodes = new KeyCode[9] {
+    KeyCode.Alpha1,
+    KeyCode.Alpha2,
     KeyCode.Alpha3,
     KeyCode.Alpha4,
     KeyCode.Alpha5,
@@ -139,16 +138,14 @@ public class Game : MonoBehaviour {
     KeyCode.Alpha9
   };
 
-  public static KeyCode[] MovementKeyCodes = new KeyCode[4]
-  {
+  public static KeyCode[] MovementKeyCodes = new KeyCode[4] {
     KeyCode.W,
     KeyCode.D,
     KeyCode.S,
     KeyCode.A
   };
 
-  public static Vector2Int[] MovementDirections = new Vector2Int[4]
-  {
+  public static Vector2Int[] MovementDirections = new Vector2Int[4] {
     Vector2Int.up,
     Vector2Int.right,
     Vector2Int.down,
@@ -163,6 +160,8 @@ public class Game : MonoBehaviour {
     switch (State) {
     case GameState.ActiveBoard: {
         Mirror[] mirrors = Board.GetComponentsInChildren<Mirror>();
+        if (Input.GetKeyDown(KeyCode.Delete))
+          LoadNextBoard();
 
         for (int i = 0; i < mirrors.Length; i++) {
           if (Input.GetKeyDown(ObjectSelectionKeyCodes[i])) {
