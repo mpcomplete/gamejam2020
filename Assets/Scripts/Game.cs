@@ -164,7 +164,7 @@ public class Game : MonoBehaviour {
         Mirror[] mirrors = Board.GetComponentsInChildren<Mirror>();
 
         // Debug stuff.
-        if (Input.GetKeyDown(KeyCode.Delete))
+        if (Input.GetKeyDown(KeyCode.Equals))
           LoadNextBoard();
         if (Input.GetKeyDown(KeyCode.Space))
           OnQuarterBeat();
