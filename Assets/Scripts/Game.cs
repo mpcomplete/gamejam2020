@@ -15,6 +15,12 @@ public class Game : MonoBehaviour {
     new Vector2Int(-1, 1)   // north west
   };
 
+  enum GameState { ActiveBoard, CompletedBoard }
+
+  [Header("Audio")]
+  [SerializeField]
+  AudioSource MusicAudioSource = null;
+
   [Header("Boards")]
   [SerializeField] 
   Board[] Boards = null;
@@ -30,10 +36,12 @@ public class Game : MonoBehaviour {
 
   Board Board;
   int BoardIndex = 0;
+  GameState State = GameState.CompletedBoard;
 
   void Start() {
-    Board = Instantiate(Boards[0]);
     BoardCompleteOverlay.ClickableRegion.onClick.AddListener(LoadNextBoard);
+    Board = Instantiate(Boards[0]);
+    State = GameState.ActiveBoard;
   }
 
   void OnDestroy() {
@@ -48,6 +56,8 @@ public class Game : MonoBehaviour {
     Destroy(Board.gameObject);
     BoardIndex = nextBoardIndex;
     Board = Instantiate(Boards[BoardIndex]);
+    State = GameState.ActiveBoard;
+    MusicAudioSource.Stop();
   }
 
   public static Vector3 GridToWorldPosition(Vector2Int gp) {
@@ -134,25 +144,45 @@ public class Game : MonoBehaviour {
   public static bool DoDebug = false;
 
   void Update() {
-    KeyCode[] levelCodes = { KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3 };
-    for (int i = 0; i < levelCodes.Length; i++) {
-      if (Input.GetKeyDown(levelCodes[i])) {
-        Destroy(Board.gameObject);
-        Board = Instantiate(Boards[i]);
-        break;
-      }
-    }
+    switch (State)
+    {
+      case GameState.ActiveBoard:
+      {
+        KeyCode[] levelCodes = { KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3 };
+        for (int i = 0; i < levelCodes.Length; i++) {
+          if (Input.GetKeyDown(levelCodes[i])) {
+            Destroy(Board.gameObject);
+            Board = Instantiate(Boards[i]);
+            break;
+          }
+        }
 
-    KeyCode[] mirrorCodes = { KeyCode.Q, KeyCode.W, KeyCode.E };
-    for (int i = 0; i < mirrorCodes.Length; i++) {
-      if (Input.GetKeyDown(mirrorCodes[i])) {
-        Mirror[] mirrors = Board.GetComponentsInChildren<Mirror>();
-        if (mirrors != null && i < mirrors.Length) {
-          int dir = Input.GetKey(KeyCode.LeftShift) ? -1 : 1;
-          mirrors[i].Orientation = mirrors[i].Orientation + dir;
-          DoDebug = true;
+        KeyCode[] mirrorCodes = { KeyCode.Q, KeyCode.W, KeyCode.E };
+        for (int i = 0; i < mirrorCodes.Length; i++) {
+          if (Input.GetKeyDown(mirrorCodes[i])) {
+            Mirror[] mirrors = Board.GetComponentsInChildren<Mirror>();
+            if (mirrors != null && i < mirrors.Length) {
+              int dir = Input.GetKey(KeyCode.LeftShift) ? -1 : 1;
+              mirrors[i].Orientation = mirrors[i].Orientation + dir;
+              DoDebug = true;
+            }
+          }
+        }
+
+        BoardCompleteOverlay.gameObject.SetActive(false);
+
+        if (Board.LightSink.BeamStrikesThisFrame > 0)
+        {
+          State = GameState.CompletedBoard;          
+          BoardCompleteOverlay.gameObject.SetActive(true);
+          MusicAudioSource.clip = Board.WinningMusic;
+          MusicAudioSource.Play();
         }
       }
+      break;
+
+      case GameState.CompletedBoard:
+      break;
     }
 
     const int MAX_DEPTH = 6;

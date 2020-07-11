@@ -5,6 +5,7 @@ public class Board : MonoBehaviour {
   public LightSink LightSink;
   public Vector2Int Min = Vector2Int.zero;
   public Vector2Int Max = new Vector2Int(9, 9);
+  public AudioClip WinningMusic;
 
   public Vector2Int GetLightSourceCell() {
     return getObjectCell(LightSource.gameObject);

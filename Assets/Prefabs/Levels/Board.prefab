@@ -123,6 +123,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c38c30ef21682aa4b9471f0b5b69e29c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  StartLight: {fileID: 0}
-  GoalLight: {fileID: 0}
-  Objects: []
+  LightSource: {fileID: 0}
+  LightSink: {fileID: 0}
+  Min: {x: 0, y: 0}
+  Max: {x: 9, y: 9}
+  WinningMusic: {fileID: 8300000, guid: 5d1659324f787ba4baf22fe45db8f142, type: 3}

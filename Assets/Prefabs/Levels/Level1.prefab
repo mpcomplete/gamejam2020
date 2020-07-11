@@ -225,6 +225,11 @@ PrefabInstance:
       propertyPath: LightSink
       value: 
       objectReference: {fileID: 5170025177229972763}
+    - target: {fileID: 5730713804920128683, guid: 4a3babbd2638dab449c756215956fb47,
+        type: 3}
+      propertyPath: WinningMusic
+      value: 
+      objectReference: {fileID: 8300000, guid: ed512f1fc73f6534cb9522eb8e824276, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4a3babbd2638dab449c756215956fb47, type: 3}
 --- !u!4 &8556521425517252544 stripped
