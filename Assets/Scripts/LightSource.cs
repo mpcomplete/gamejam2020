@@ -3,15 +3,16 @@ using System.Linq;
 using UnityEngine;
 
 public class LightSource : LightStrikeableBase {
-  public LightBeamColor[] Beams = { LightBeamColor.red, LightBeamColor.green, LightBeamColor.green };
+  public LightBeamColor Beam = LightBeamColor.white;
   public int Heading = 0;
 
   public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {
+    List<LightBeam> result = new List<LightBeam>();
     if (input == null) {
-      // Only generate beams on start, not on collision.
-      return Beams.Select(beam => new LightBeam { Color = beam, Heading = Heading }).ToList();
+      // Only generate beam on start, not on collision.
+      result.Add(new LightBeam { Color = Beam, Heading = Heading });
     }
-    return new List<LightBeam>();
+    return result;
   }
 
   public override void OnQuarterBeat(int counter) {

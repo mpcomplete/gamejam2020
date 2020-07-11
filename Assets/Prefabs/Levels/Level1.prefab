@@ -70,12 +70,12 @@ PrefabInstance:
     - target: {fileID: 2667251841133715574, guid: 13080089eb9164248971bb6d8056c20b,
         type: 3}
       propertyPath: Beams.Array.size
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2667251841133715574, guid: 13080089eb9164248971bb6d8056c20b,
         type: 3}
       propertyPath: Beams.Array.data[0]
-      value: 1
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 2667251841133715574, guid: 13080089eb9164248971bb6d8056c20b,
         type: 3}
