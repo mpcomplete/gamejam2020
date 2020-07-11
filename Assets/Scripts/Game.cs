@@ -59,7 +59,7 @@ public class Game : MonoBehaviour {
   }
 
   public static Vector3 GridToWorldPosition(Vector2Int gp) {
-    return new Vector3(gp.x, 1, gp.y);
+    return new Vector3(gp.x, 0, gp.y);
   }
 
   public static LightNode MarchLightTree(Board board, int maxDepth) {
@@ -103,12 +103,14 @@ public class Game : MonoBehaviour {
   }
 
   void RenderLightTree(LightNode tree) {
+    Vector3 BeamOffset = new Vector3(0, .5f, 0);
+
     for (int i = 0; i < tree.LightBeams.Count; i++) {
       LightBeam lb = tree.LightBeams[i];
       LightNode ln = tree.LightNodes[i];
       LineRenderer lr = LineRenderers[LineRendererIndex++];
-      Vector3 origin = GridToWorldPosition(tree.Position);
-      Vector3 destination = GridToWorldPosition(ln.Position);
+      Vector3 origin = BeamOffset + GridToWorldPosition(tree.Position);
+      Vector3 destination = BeamOffset + GridToWorldPosition(ln.Position);
 
       lr.gameObject.SetActive(true);
       lr.positionCount = 2;
