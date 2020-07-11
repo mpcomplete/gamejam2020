@@ -32,4 +32,9 @@ public class Mirror : LightStrikeableBase {
     }
     return result;
   }
+
+  public override void OnQuarterBeat(int counter) {
+    if (counter%4 == 0 || counter%4 == 1)
+      Orientation += 1;
+  }
 }

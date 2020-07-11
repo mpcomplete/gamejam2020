@@ -176,16 +176,24 @@ public class Game : MonoBehaviour {
   }
 
   float beatTimer = 0f;
+  int quarterBeats = 0;
   void FixedUpdate() {
-    float period = BeatPeriodInMS / 1000f;
+    float quarterPeriod = BeatPeriodInMS / 1000f / 4f;
     while (beatTimer < Time.time) {
-      OnBeat();
-      beatTimer += period;
+      OnQuarterBeat();
+      beatTimer += quarterPeriod;
     }
   }
 
-  // Called once per "beat", defined by BeatPeriodInMS.
-  public void OnBeat() {
-    BeatAudioSource.Play();
+  // Called 4 times per "beat", defined by BeatPeriodInMS.
+  public void OnQuarterBeat() {
+    quarterBeats++;
+    if (quarterBeats % 4 == 0)
+      BeatAudioSource.Play();
+
+    foreach (GameObject child in Board.GetChildren()) {
+      if (child.TryGetComponent(out LightStrikeableBase obj))
+        obj.OnQuarterBeat(quarterBeats);
+    }
   }
 }
