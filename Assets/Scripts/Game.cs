@@ -5,7 +5,6 @@ public class Game : MonoBehaviour {
   [Header("Prefabs")]
 
   [SerializeField] Board[] Boards = null;
-  [SerializeField] LightBeam SourceBeam = null;
 
   Board Board;
 
@@ -22,9 +21,5 @@ public class Game : MonoBehaviour {
         break;
       }
     }
-
-    // Let's just cast against the current board with our sample lightbeam
-    SourceBeam.Cast(Board, Vector2Int.zero, Vector2Int.up);
-    SourceBeam.Render();
   }
 }
