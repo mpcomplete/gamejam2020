@@ -21,6 +21,7 @@ public class Game : MonoBehaviour {
   [SerializeField] AudioSource BeatAudioSource = null;
 
   [Header("Boards")]
+  [SerializeField] Board Board = null;
   [SerializeField] Board[] Boards = null;
 
   [Header("Pools")]
@@ -33,13 +34,11 @@ public class Game : MonoBehaviour {
   [Header("Gameplay")]
   [SerializeField] float BeatPeriodInMS = 1000f;
 
-  Board Board;
-  int BoardIndex = 0;
+  int BoardIndex = -1;
   GameState State = GameState.CompletedBoard;
 
   void Start() {
     BoardCompleteOverlay.ClickableRegion.onClick.AddListener(LoadNextBoard);
-    Board = Instantiate(Boards[0]);
     State = GameState.ActiveBoard;
   }
 
