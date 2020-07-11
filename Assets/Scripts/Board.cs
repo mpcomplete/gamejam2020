@@ -24,18 +24,10 @@ public class Board : MonoBehaviour {
     return v.x < Min.x || v.y < Min.y || v.x > Max.x || v.y > Max.y;
   }
 
-  public IEnumerable<GameObject> GetChildren() {
-    for (int i = 0; i < transform.childCount; i++) {
-      // TODO: use tags or something to make sure we're only getting useful objects.
-      GameObject obj = transform.GetChild(i).gameObject;
-      yield return obj;
-    }
-  }
-
   // TODO: unity raycast may be better.
-  public GameObject GetObjectAtCell(Vector2Int cell) {
-    foreach (GameObject obj in GetChildren()) {
-      if (GetObjectCell(obj) == cell)
+  public LightStrikeableBase GetObjectAtCell(Vector2Int cell) {
+    foreach (LightStrikeableBase obj in GetComponentsInChildren<LightStrikeableBase>()) {
+      if (GetObjectCell(obj.gameObject) == cell)
         return obj;
     }
     return null;

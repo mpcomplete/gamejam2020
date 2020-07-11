@@ -83,13 +83,12 @@ public class Game : MonoBehaviour {
       return new LightNode { Position = position + vHeading * 100 };
     }
 
-    GameObject target = board.GetObjectAtCell(nextCell);
-
-    if (target && target.TryGetComponent(out LightStrikeableBase strikeable)) {
+    LightStrikeableBase target = board.GetObjectAtCell(nextCell);
+    if (target) {
       LightNode targetNode = new LightNode { Position = nextCell };
 
-      strikeable.OnCollide(beam);
-      targetNode.LightBeams = strikeable.ComputeOutgoingLightBeams(beam);
+      target.OnCollide(beam);
+      targetNode.LightBeams = target.ComputeOutgoingLightBeams(beam);
 
       foreach (LightBeam lb in targetNode.LightBeams) {
         targetNode.LightNodes.Add(March(board, nextCell, lb, depth - 1));
@@ -237,9 +236,8 @@ public class Game : MonoBehaviour {
     if (quarterBeats % 4 == 0)
       BeatAudioSource.Play();
 
-    foreach (GameObject child in Board.GetChildren()) {
-      if (child.TryGetComponent(out LightStrikeableBase obj))
-        obj.OnQuarterBeat(quarterBeats);
+    foreach (LightStrikeableBase obj in Board.GetComponentsInChildren<LightStrikeableBase>()) {
+      obj.OnQuarterBeat(quarterBeats);
     }
   }
 }
