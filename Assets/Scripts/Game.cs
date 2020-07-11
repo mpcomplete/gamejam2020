@@ -28,8 +28,6 @@ public class Game : MonoBehaviour {
   [SerializeField]
   BoardCompleteOverlay BoardCompleteOverlay = null;
 
-  LightNode LightTree;
-
   Board Board;
   int BoardIndex = 0;
 
@@ -57,7 +55,7 @@ public class Game : MonoBehaviour {
   }
 
   public static LightNode MarchLightTree(Board board, Vector2Int origin, int heading, int maxDepth) {
-    LightNode rootNode = new LightNode { Depth = 0, Position = origin };
+    LightNode rootNode = new LightNode { Position = origin };
 
     rootNode.LightBeams.Add(new LightBeam { Color = Color.red, Heading = 0 });
     rootNode.LightBeams.Add(new LightBeam { Color = Color.green, Heading = 0 });
@@ -74,22 +72,33 @@ public class Game : MonoBehaviour {
     Vector2Int nextCell = position + vHeading;
 
     if (depth >= maxDepth) {
-      return new LightNode { Depth = depth, Position = nextCell };
+      return new LightNode { Position = nextCell };
     }
 
     if (board.OutOfBounds(nextCell)) {
-      return new LightNode { Depth = depth, Position = nextCell };
+      return new LightNode { Position = nextCell };
     }
 
     GameObject target = board.GetObjectAtCell(nextCell);
 
     if (target && target.TryGetComponent(out Mirror mirror)) {
-      LightNode targetNode = new LightNode { Depth = depth, Position = nextCell };
+      LightNode targetNode = new LightNode { Position = nextCell };
       LightBeam[] beams = mirror.OnCollide(beam);
 
       foreach (LightBeam newbeam in beams) {
         targetNode.LightBeams.Add(newbeam);
       }
+
+      foreach (LightBeam lb in targetNode.LightBeams) {
+        targetNode.LightNodes.Add(March(board, nextCell, lb, depth + 1, maxDepth));
+      }
+      return targetNode;
+    }
+    else if (target && target.TryGetComponent(out LightStrikeableBase strikeable)) {
+      LightNode targetNode = new LightNode { Position = nextCell };
+
+      strikeable.OnCollide(beam);
+      targetNode.LightBeams = strikeable.ComputeOutgoingLightBeams(beam);
 
       foreach (LightBeam lb in targetNode.LightBeams) {
         targetNode.LightNodes.Add(March(board, nextCell, lb, depth + 1, maxDepth));
@@ -147,10 +156,10 @@ public class Game : MonoBehaviour {
     }
 
     const int MAX_DEPTH = 6;
-    LightTree = MarchLightTree(Board, Board.GetLightSourceCell(), 0, MAX_DEPTH);
+    LightNode LightTree = MarchLightTree(Board, Board.GetLightSourceCell(), 0, MAX_DEPTH);
+
     LineRendererIndex = 0;
     RenderLightTree(LightTree);
     DisableUnusedLineRenderers();
   }
 }
-

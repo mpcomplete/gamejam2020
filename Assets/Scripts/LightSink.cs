@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class LightSink : MonoBehaviour, ILightStrikeable {
+public class LightSink : LightStrikeableBase {
   Light enabledLight;
 
   public int BeamStrikesThisFrame = 0;
@@ -11,11 +11,12 @@ public class LightSink : MonoBehaviour, ILightStrikeable {
     enabledLight.enabled = false;
   }
 
-  public List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {
+  public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {
     return new List<LightBeam>();
   }
 
-  public void OnCollide(LightBeam lb) {
+  public override void OnCollide(LightBeam lb) {
     BeamStrikesThisFrame++;
+    Debug.Log($"{BeamStrikesThisFrame} Hit the Sink!");
   }
 }
