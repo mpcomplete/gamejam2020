@@ -62,15 +62,13 @@ public class Game : MonoBehaviour {
     return new Vector3(gp.x, 1, gp.y);
   }
 
-  public static LightNode MarchLightTree(Board board, Vector2Int origin, int heading, int maxDepth) {
-    LightNode rootNode = new LightNode { Position = origin };
+  public static LightNode MarchLightTree(Board board, int maxDepth) {
+    LightNode rootNode = new LightNode { Position = board.GetLightSourceCell() };
 
-    rootNode.LightBeams.Add(new LightBeam { Color = Color.red, Heading = heading });
-    rootNode.LightBeams.Add(new LightBeam { Color = Color.green, Heading = heading });
-    rootNode.LightBeams.Add(new LightBeam { Color = Color.blue, Heading = heading });
+    rootNode.LightBeams = board.LightSource.ComputeOutgoingLightBeams(null);
 
     foreach (LightBeam lightBeam in rootNode.LightBeams) {
-      rootNode.LightNodes.Add(March(board, origin, lightBeam, maxDepth));
+      rootNode.LightNodes.Add(March(board, rootNode.Position, lightBeam, maxDepth));
     }
     return rootNode;
   }
@@ -168,7 +166,7 @@ public class Game : MonoBehaviour {
     }
 
     const int MAX_DEPTH = 6;
-    LightNode LightTree = MarchLightTree(Board, Board.GetLightSourceCell(), 0, MAX_DEPTH);
+    LightNode LightTree = MarchLightTree(Board, MAX_DEPTH);
 
     LineRendererIndex = 0;
     RenderLightTree(LightTree);
