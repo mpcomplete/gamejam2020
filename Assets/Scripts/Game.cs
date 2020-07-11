@@ -37,6 +37,7 @@ public class Game : MonoBehaviour {
   GameState State = GameState.CompletedBoard;
 
   void Start() {
+    SelectedMirror = Board.GetComponentInChildren<Mirror>();
     BoardCompleteOverlay.ClickableRegion.onClick.AddListener(LoadNextBoard);
     State = GameState.ActiveBoard;
   }
@@ -50,6 +51,7 @@ public class Game : MonoBehaviour {
     Destroy(Board.gameObject);
     BoardIndex = (BoardIndex + 1) % Boards.Length;
     Board = Instantiate(Boards[BoardIndex]);
+    SelectedMirror = Board.GetComponentInChildren<Mirror>();
     State = GameState.ActiveBoard;
     MusicAudioSource.Stop();
   }
