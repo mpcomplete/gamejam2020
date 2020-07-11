@@ -184,7 +184,6 @@ public class Game : MonoBehaviour {
         if (SelectedMirror) {
           Vector2Int selectedGridCell = Board.GetObjectCell(SelectedMirror.gameObject);
           Vector3 selectedPosition = Vector3.up + GridToWorldPosition(selectedGridCell);
-          Vector3 currentPosition = SelectionIndicator.transform.position;
 
           SelectionIndicator.gameObject.SetActive(true);
           // TODO: Slightly bad behavior... probably should happen in FixedUpdate
