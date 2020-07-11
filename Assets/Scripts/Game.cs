@@ -47,10 +47,8 @@ public class Game : MonoBehaviour {
 
   [ContextMenu("Load Next Board")]
   public void LoadNextBoard() {
-    int nextBoardIndex = BoardIndex + 1 >= Boards.Length ? 0 : BoardIndex + 1;
-
     Destroy(Board.gameObject);
-    BoardIndex = nextBoardIndex;
+    BoardIndex = (BoardIndex + 1) % Boards.Length;
     Board = Instantiate(Boards[BoardIndex]);
     State = GameState.ActiveBoard;
     MusicAudioSource.Stop();
@@ -114,6 +112,8 @@ public class Game : MonoBehaviour {
       lr.positionCount = 2;
       lr.SetPosition(0, origin);
       lr.SetPosition(1, destination);
+      // TODO: maybe cache materials per lb.Color.
+      lr.material.SetColor("_EmissionColor", lb.EmissionColor());
       RenderLightTree(ln);
     }
   }
