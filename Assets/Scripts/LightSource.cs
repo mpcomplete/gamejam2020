@@ -2,12 +2,10 @@
 using UnityEngine;
 
 public class LightSource : LightStrikeableBase {
-    public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input)
-    {
-        return new List<LightBeam>();
-    }
+  public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {
+    return new List<LightBeam>();
+  }
 
-    public override void OnCollide(LightBeam input)
-    {
-    }
+  public override void OnCollide(LightBeam input) {
+  }
 }
