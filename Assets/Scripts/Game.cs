@@ -57,9 +57,9 @@ public class Game : MonoBehaviour {
   public static LightNode MarchLightTree(Board board, Vector2Int origin, int heading, int maxDepth) {
     LightNode rootNode = new LightNode { Position = origin };
 
-    rootNode.LightBeams.Add(new LightBeam { Color = Color.red, Heading = 0 });
-    rootNode.LightBeams.Add(new LightBeam { Color = Color.green, Heading = 0 });
-    rootNode.LightBeams.Add(new LightBeam { Color = Color.blue, Heading = 0 });
+    rootNode.LightBeams.Add(new LightBeam { Color = Color.red, Heading = heading });
+    rootNode.LightBeams.Add(new LightBeam { Color = Color.green, Heading = heading });
+    rootNode.LightBeams.Add(new LightBeam { Color = Color.blue, Heading = heading });
 
     foreach (LightBeam lightBeam in rootNode.LightBeams) {
       rootNode.LightNodes.Add(March(board, origin, lightBeam, maxDepth));
