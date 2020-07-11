@@ -62,16 +62,16 @@ public class Game : MonoBehaviour {
     rootNode.LightBeams.Add(new LightBeam { Color = Color.blue, Heading = 0 });
 
     foreach (LightBeam lightBeam in rootNode.LightBeams) {
-      rootNode.LightNodes.Add(March(board, origin, lightBeam, 1, maxDepth));
+      rootNode.LightNodes.Add(March(board, origin, lightBeam, maxDepth));
     }
     return rootNode;
   }
 
-  public static LightNode March(Board board, Vector2Int position, LightBeam beam, int depth, int maxDepth) {
+  public static LightNode March(Board board, Vector2Int position, LightBeam beam, int depth) {
     Vector2Int vHeading = Vector2IntHeadings[beam.Heading];
     Vector2Int nextCell = position + vHeading;
 
-    if (depth >= maxDepth) {
+    if (depth < 0) {
       return new LightNode { Position = nextCell };
     }
 
@@ -88,11 +88,11 @@ public class Game : MonoBehaviour {
       targetNode.LightBeams = strikeable.ComputeOutgoingLightBeams(beam);
 
       foreach (LightBeam lb in targetNode.LightBeams) {
-        targetNode.LightNodes.Add(March(board, nextCell, lb, depth + 1, maxDepth));
+        targetNode.LightNodes.Add(March(board, nextCell, lb, depth-1));
       }
       return targetNode;
     } else {
-      return March(board, nextCell, beam, depth, maxDepth);
+      return March(board, nextCell, beam, depth);
     }
   }
 
