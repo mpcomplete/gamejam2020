@@ -15,7 +15,7 @@ public class LightBeam {
   static public readonly Color[] BeamColorToEmissionColor = {
     UnityEngine.Color.black,
     UnityEngine.Color.red*1.8f,
-    UnityEngine.Color.blue*1.8f,
+    UnityEngine.Color.cyan*1.8f,
     UnityEngine.Color.green*1.8f,
   };
   public Color EmissionColor() {
