@@ -3,8 +3,7 @@ using System;
 using UnityEngine;
 
 public class Game : MonoBehaviour {
-  public static Vector2Int[] Vector2IntHeadings = new Vector2Int[8]
-  {
+  public static Vector2Int[] Vector2IntHeadings = new Vector2Int[8] {
     new Vector2Int(0, 1),   // north
     new Vector2Int(1, 1),   // north east
     new Vector2Int(1, 0),   // east
@@ -18,21 +17,17 @@ public class Game : MonoBehaviour {
   enum GameState { ActiveBoard, CompletedBoard }
 
   [Header("Audio")]
-  [SerializeField]
-  AudioSource MusicAudioSource = null;
+  [SerializeField] AudioSource MusicAudioSource = null;
 
   [Header("Boards")]
-  [SerializeField] 
-  Board[] Boards = null;
+  [SerializeField] Board[] Boards = null;
 
-  [Header("Pools")] 
-  [SerializeField] 
-  LineRenderer[] LineRenderers = null;
+  [Header("Pools")]
+  [SerializeField] LineRenderer[] LineRenderers = null;
   int LineRendererIndex = 0;
 
   [Header("UI")]
-  [SerializeField]
-  BoardCompleteOverlay BoardCompleteOverlay = null;
+  [SerializeField] BoardCompleteOverlay BoardCompleteOverlay = null;
 
   Board Board;
   int BoardIndex = 0;
@@ -49,8 +44,7 @@ public class Game : MonoBehaviour {
   }
 
   [ContextMenu("Load Next Board")]
-  public void LoadNextBoard()
-  {
+  public void LoadNextBoard() {
     int nextBoardIndex = BoardIndex + 1 >= Boards.Length ? 0 : BoardIndex + 1;
 
     Destroy(Board.gameObject);
@@ -98,7 +92,7 @@ public class Game : MonoBehaviour {
       targetNode.LightBeams = strikeable.ComputeOutgoingLightBeams(beam);
 
       foreach (LightBeam lb in targetNode.LightBeams) {
-        targetNode.LightNodes.Add(March(board, nextCell, lb, depth-1));
+        targetNode.LightNodes.Add(March(board, nextCell, lb, depth - 1));
       }
       return targetNode;
     } else {
@@ -131,10 +125,8 @@ public class Game : MonoBehaviour {
   public static bool DoDebug = false;
 
   void Update() {
-    switch (State)
-    {
-      case GameState.ActiveBoard:
-      {
+    switch (State) {
+    case GameState.ActiveBoard: {
         KeyCode[] levelCodes = { KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3 };
         for (int i = 0; i < levelCodes.Length; i++) {
           if (Input.GetKeyDown(levelCodes[i])) {
@@ -158,9 +150,8 @@ public class Game : MonoBehaviour {
 
         BoardCompleteOverlay.gameObject.SetActive(false);
 
-        if (Board.LightSink.BeamStrikesThisFrame > 0)
-        {
-          State = GameState.CompletedBoard;          
+        if (Board.LightSink.BeamStrikesThisFrame > 0) {
+          State = GameState.CompletedBoard;
           BoardCompleteOverlay.gameObject.SetActive(true);
           MusicAudioSource.clip = Board.WinningMusic;
           MusicAudioSource.Play();
@@ -168,7 +159,7 @@ public class Game : MonoBehaviour {
       }
       break;
 
-      case GameState.CompletedBoard:
+    case GameState.CompletedBoard:
       break;
     }
 

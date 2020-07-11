@@ -2,5 +2,5 @@
 using UnityEngine.UI;
 
 public class BoardCompleteOverlay : MonoBehaviour {
-    public Button ClickableRegion;
+  public Button ClickableRegion;
 }
