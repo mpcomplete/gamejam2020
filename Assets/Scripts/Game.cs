@@ -80,7 +80,7 @@ public class Game : MonoBehaviour {
     }
 
     if (board.OutOfBounds(nextCell)) {
-      return new LightNode { Position = nextCell };
+      return new LightNode { Position = position + vHeading * 100 };
     }
 
     GameObject target = board.GetObjectAtCell(nextCell);
