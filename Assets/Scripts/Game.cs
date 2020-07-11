@@ -109,6 +109,8 @@ public class Game : MonoBehaviour {
     }
   }
 
+  public static bool DoDebug = false;
+
   void Update() {
     KeyCode[] levelCodes = { KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3 };
     for (int i = 0; i < levelCodes.Length; i++) {
@@ -119,12 +121,15 @@ public class Game : MonoBehaviour {
       }
     }
 
-    if (Input.GetKeyDown(KeyCode.Z)) {
-      Mirror firstMirror = Board.GetComponentInChildren<Mirror>();
-      if (firstMirror) {
-        Vector3 angles = firstMirror.transform.eulerAngles;
-        angles.y += 22.5f;
-        firstMirror.transform.eulerAngles = angles;
+    KeyCode[] mirrorCodes = { KeyCode.Q, KeyCode.W, KeyCode.E };
+    for (int i = 0; i < mirrorCodes.Length; i++) {
+      if (Input.GetKeyDown(mirrorCodes[i])) {
+        Mirror[] mirrors = Board.GetComponentsInChildren<Mirror>();
+        if (mirrors != null && i < mirrors.Length) {
+          int dir = Input.GetKey(KeyCode.LeftShift) ? -1 : 1;
+          mirrors[i].Orientation = mirrors[i].Orientation + dir;
+          DoDebug = true;
+        }
       }
     }
 
@@ -135,23 +140,6 @@ public class Game : MonoBehaviour {
     LineRendererIndex = 0;
     RenderLightTree(LightTree);
     DisableUnusedLineRenderers();
-    Debug.Log(count);
   }
-}
-
-// A number from 0 to 15 representing the possible orientation of an object.
-// "0" is "forward". "n" is n/16th of a revolution around.
-public struct Orientation {
-  private const float fraction = 360f / 16f;
-  private int value;
-
-  public Orientation(int value) {
-    Debug.Assert(value >= 0 && value <= 7);
-    this.value = value;
-  }
-
-  public float toAngle() => value * fraction;
-  public static Orientation fromAngle(float angle) => new Orientation((int)(angle / fraction));
-  public static implicit operator int(Orientation o) => o.value;
 }
 
