@@ -418,7 +418,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 581896879}
-  m_LocalRotation: {x: 0.27734363, y: -0.00000001653139, z: 0.0000000047720805, w: 0.9607708}
+  m_LocalRotation: {x: 0.27734363, y: -0.000000016533514, z: 0.0000000047726947, w: 0.9607708}
   m_LocalPosition: {x: 4.5, y: 7.798, z: -9.387}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -958,6 +958,7 @@ MonoBehaviour:
   Boards:
   - {fileID: 8090770210332311632, guid: c8558f1798e2f1e48b8c5f207d51667f, type: 3}
   - {fileID: 1037489852600292468, guid: d2f1641e8afc45f42860bf6e0de4e8f5, type: 3}
+  - {fileID: 1913581498766471175, guid: 57eaf4ce688efbe48a15f738f6f138bf, type: 3}
   SelectionIndicator: {fileID: 7343528108515389431}
   LineRenderers:
   - {fileID: 2044050096}
@@ -1511,7 +1512,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 5000
-  field of view: 33.72452
+  field of view: 33.752144
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -1536,7 +1537,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1528109961}
-  m_LocalRotation: {x: 0.27734363, y: -0.00000001653139, z: 0.0000000047720805, w: 0.9607708}
+  m_LocalRotation: {x: 0.27734363, y: -0.000000016533514, z: 0.0000000047726947, w: 0.9607708}
   m_LocalPosition: {x: 4.5, y: 7.798, z: -9.387}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
