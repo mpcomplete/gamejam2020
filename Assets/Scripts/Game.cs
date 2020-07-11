@@ -73,7 +73,6 @@ public class Game : MonoBehaviour {
     Vector2Int vHeading = Vector2IntHeadings[beam.Heading];
     Vector2Int nextCell = position + vHeading;
 
-    // TODO: is this totally correct?
     if (depth >= maxDepth) {
       return new LightNode { Depth = depth, Position = nextCell };
     }
@@ -143,7 +142,7 @@ public class Game : MonoBehaviour {
     }
 
     const int MAX_DEPTH = 6;
-    LightTree = MarchLightTree(Board, Vector2Int.zero, 0, MAX_DEPTH);
+    LightTree = MarchLightTree(Board, Board.GetStartLightCell(), 0, MAX_DEPTH);
     LineRendererIndex = 0;
     RenderLightTree(LightTree);
     DisableUnusedLineRenderers();
