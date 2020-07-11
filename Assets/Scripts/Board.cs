@@ -3,6 +3,8 @@
 public class Board : MonoBehaviour {
   public GameObject StartLight;
   public GameObject GoalLight;
+  public Vector2Int Min = Vector2Int.zero;
+  public Vector2Int Max = new Vector2Int(9, 9);
 
   void Start() {
     Debug.Log($"starty: {this.GetStartLightCell()}");
@@ -12,9 +14,15 @@ public class Board : MonoBehaviour {
   public Vector2Int GetStartLightCell() {
     return getObjectCell(StartLight);
   }
+
   public Vector2Int GetGoalLightCell() {
     return getObjectCell(GoalLight);
   }
+
+  public bool OutOfBounds(Vector2Int v) {
+      return v.x < Min.x || v.y < Min.y || v.x > Max.x || v.y > Max.y;
+  }
+
   // TODO: unity raycast may be better.
   public GameObject GetObjectAtCell(Vector2Int cell) {
     for (int i = 0; i < transform.childCount; i++) {
