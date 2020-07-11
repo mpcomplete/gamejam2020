@@ -16,7 +16,7 @@ public class Mirror : MonoBehaviour {
     int outputOrientation = reflectionMap[adjustedInput];
     if (outputOrientation != -1) {
       int adjustedOutput = (outputOrientation - (int)this.orientation) % 16;
-      return new LightBeam[] { new LightBeam(input.Color, adjustedOutput / 2) };
+      return new LightBeam[] { new LightBeam { Color = input.Color, Heading = adjustedOutput / 2 } };
     }
     return null;
   }
