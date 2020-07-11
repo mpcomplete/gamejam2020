@@ -81,20 +81,7 @@ public class Game : MonoBehaviour {
 
     GameObject target = board.GetObjectAtCell(nextCell);
 
-    if (target && target.TryGetComponent(out Mirror mirror)) {
-      LightNode targetNode = new LightNode { Position = nextCell };
-      LightBeam[] beams = mirror.OnCollide(beam);
-
-      foreach (LightBeam newbeam in beams) {
-        targetNode.LightBeams.Add(newbeam);
-      }
-
-      foreach (LightBeam lb in targetNode.LightBeams) {
-        targetNode.LightNodes.Add(March(board, nextCell, lb, depth + 1, maxDepth));
-      }
-      return targetNode;
-    }
-    else if (target && target.TryGetComponent(out LightStrikeableBase strikeable)) {
+    if (target && target.TryGetComponent(out LightStrikeableBase strikeable)) {
       LightNode targetNode = new LightNode { Position = nextCell };
 
       strikeable.OnCollide(beam);
