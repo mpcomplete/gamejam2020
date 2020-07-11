@@ -67,21 +67,21 @@ public class Game : MonoBehaviour {
   public static LightNode MarchLightTree(Board board, Vector2Int origin, int heading, int maxDepth) {
     LightNode rootNode = new LightNode { Position = origin };
 
-    rootNode.LightBeams.Add(new LightBeam { Color = Color.red, Heading = 0 });
-    rootNode.LightBeams.Add(new LightBeam { Color = Color.green, Heading = 0 });
-    rootNode.LightBeams.Add(new LightBeam { Color = Color.blue, Heading = 0 });
+    rootNode.LightBeams.Add(new LightBeam { Color = Color.red, Heading = heading });
+    rootNode.LightBeams.Add(new LightBeam { Color = Color.green, Heading = heading });
+    rootNode.LightBeams.Add(new LightBeam { Color = Color.blue, Heading = heading });
 
     foreach (LightBeam lightBeam in rootNode.LightBeams) {
-      rootNode.LightNodes.Add(March(board, origin, lightBeam, 1, maxDepth));
+      rootNode.LightNodes.Add(March(board, origin, lightBeam, maxDepth));
     }
     return rootNode;
   }
 
-  public static LightNode March(Board board, Vector2Int position, LightBeam beam, int depth, int maxDepth) {
+  public static LightNode March(Board board, Vector2Int position, LightBeam beam, int depth) {
     Vector2Int vHeading = Vector2IntHeadings[beam.Heading];
     Vector2Int nextCell = position + vHeading;
 
-    if (depth >= maxDepth) {
+    if (depth < 0) {
       return new LightNode { Position = nextCell };
     }
 
@@ -91,31 +91,18 @@ public class Game : MonoBehaviour {
 
     GameObject target = board.GetObjectAtCell(nextCell);
 
-    if (target && target.TryGetComponent(out Mirror mirror)) {
-      LightNode targetNode = new LightNode { Position = nextCell };
-      LightBeam[] beams = mirror.OnCollide(beam);
-
-      foreach (LightBeam newbeam in beams) {
-        targetNode.LightBeams.Add(newbeam);
-      }
-
-      foreach (LightBeam lb in targetNode.LightBeams) {
-        targetNode.LightNodes.Add(March(board, nextCell, lb, depth + 1, maxDepth));
-      }
-      return targetNode;
-    }
-    else if (target && target.TryGetComponent(out LightStrikeableBase strikeable)) {
+    if (target && target.TryGetComponent(out LightStrikeableBase strikeable)) {
       LightNode targetNode = new LightNode { Position = nextCell };
 
       strikeable.OnCollide(beam);
       targetNode.LightBeams = strikeable.ComputeOutgoingLightBeams(beam);
 
       foreach (LightBeam lb in targetNode.LightBeams) {
-        targetNode.LightNodes.Add(March(board, nextCell, lb, depth + 1, maxDepth));
+        targetNode.LightNodes.Add(March(board, nextCell, lb, depth-1));
       }
       return targetNode;
     } else {
-      return March(board, nextCell, beam, depth, maxDepth);
+      return March(board, nextCell, beam, depth);
     }
   }
 

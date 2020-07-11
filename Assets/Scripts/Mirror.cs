@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
-public class Mirror : MonoBehaviour {
+public class Mirror : LightStrikeableBase {
   // 0-15, 0 is forward, n is n/16th of a revolution around.
   public int Orientation {
     get => (int)((transform.eulerAngles.y+.1) * 16f / 360f);
@@ -11,7 +12,8 @@ public class Mirror : MonoBehaviour {
     }
   }
 
-  public LightBeam[] OnCollide(LightBeam input) {
+  public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {
+    var result = new List<LightBeam>();
     // Reflection map for a mirror with orientation "0".
     // outputOrientation = reflectionMap[inputOrientation] for that 0-oriented mirror.
     // To find reflections for arbitrary headings, we put the heading into the mirror's orientation space,
@@ -26,8 +28,8 @@ public class Mirror : MonoBehaviour {
         Debug.Log($"mirror {Orientation}: {input.Heading} => {adjustedInput} reflects {outputOrientation} => {adjustedOutput} => {adjustedOutput / 2}");
         Game.DoDebug = false;
       }
-      return new LightBeam[] { new LightBeam { Color = input.Color, Heading = adjustedOutput / 2 } };
+      result.Add(new LightBeam { Color = input.Color, Heading = adjustedOutput / 2 });
     }
-    return new LightBeam[] { };
+    return result;
   }
 }
