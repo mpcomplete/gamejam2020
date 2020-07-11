@@ -215,6 +215,16 @@ PrefabInstance:
       propertyPath: GoalLight
       value: 
       objectReference: {fileID: 8523992611823270760}
+    - target: {fileID: 5730713804920128683, guid: 4a3babbd2638dab449c756215956fb47,
+        type: 3}
+      propertyPath: LightSource
+      value: 
+      objectReference: {fileID: 7725306398443514911}
+    - target: {fileID: 5730713804920128683, guid: 4a3babbd2638dab449c756215956fb47,
+        type: 3}
+      propertyPath: LightSink
+      value: 
+      objectReference: {fileID: 5170025177229972763}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4a3babbd2638dab449c756215956fb47, type: 3}
 --- !u!4 &8556521425517252544 stripped
@@ -298,6 +308,18 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 5635751734632451177}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &7725306398443514911 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2667251841133715574, guid: 13080089eb9164248971bb6d8056c20b,
+    type: 3}
+  m_PrefabInstance: {fileID: 5635751734632451177}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7725306398443514905}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02e25253a9867ab46b7904dd8ff9beec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &6001246016421993240
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -373,3 +395,15 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 6001246016421993240}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &5170025177229972763 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1510724531307793923, guid: 109dd3bb096cee64690c0d8043f336eb,
+    type: 3}
+  m_PrefabInstance: {fileID: 6001246016421993240}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8523992611823270760}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18217d4cd01aac4e8feb92128d7e198, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
