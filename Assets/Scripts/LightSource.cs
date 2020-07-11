@@ -7,7 +7,11 @@ public class LightSource : LightStrikeableBase {
   int[] headings = { 1, 2, 3 };
 
   public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {
-    return Enumerable.Range(0, 3).Select(i => new LightBeam { Color = colors[i], Heading = headings[i] }).ToList();
+    if (input == null) {
+      // Only generate beams on start, not on collision.
+      return Enumerable.Range(0, 3).Select(i => new LightBeam { Color = colors[i], Heading = headings[i] }).ToList();
+    }
+    return new List<LightBeam>();
   }
 
   public override void OnQuarterBeat(int counter) {
