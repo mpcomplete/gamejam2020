@@ -31,6 +31,7 @@ public class Game : MonoBehaviour {
 
   void Start() {
     SelectedMirror = Board.GetComponentInChildren<Mirror>();
+    DebugDumpLevel("Starting");
   }
 
   [ContextMenu("Load Next Board")]
@@ -43,7 +44,12 @@ public class Game : MonoBehaviour {
     MusicAudioSource.Stop();
     beatTimer = 0;
     quarterBeats = 0;
-    Debug.Log($"Starting board with heading={Board.LightSource.Heading}, beat={quarterBeats}, {beatTimer}");
+    DebugDumpLevel("Starting");
+  }
+
+  void DebugDumpLevel(string prefix) {
+    var tmp = String.Join(",", Board.GetComponentsInChildren<Mirror>().Select(m => m.Orientation.ToString()));
+    Debug.Log($"{prefix} level {BoardIndex} Source:{Board.LightSource.Heading}, mirrors:{tmp}");
   }
 
   void RenderLightTree(LightNode tree) {
@@ -150,8 +156,7 @@ public class Game : MonoBehaviour {
     }
 
     if (Board.LightSink.BeamStrikesThisFrame > 0) {
-      var tmp = String.Join("; ", Board.GetComponentsInChildren<Mirror>().Select(m => m.Orientation.ToString()));
-      Debug.Log($"Won level with Source heading {Board.LightSource.Heading}, mirrors {tmp}");
+      DebugDumpLevel("Won");
       State = GameState.CompletedBoard;
       MusicAudioSource.clip = Board.WinningMusic;
       MusicAudioSource.Play();

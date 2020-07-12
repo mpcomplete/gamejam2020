@@ -30,7 +30,6 @@ public abstract class LightStrikeableBase : MonoBehaviour {
 
   // Editor-only.
   void OnValidate() {
-    //Orientation = orientation;
-//    transform.eulerAngles = new Vector3(transform.eulerAngles.x, orientation * 360f / 16f, transform.eulerAngles.z);
+    Orientation = orientation;  // Force update.
   }
 }
