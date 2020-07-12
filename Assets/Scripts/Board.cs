@@ -86,7 +86,6 @@ public class Board : MonoBehaviour {
     return null;
   }
 
-  // Returns the cell position for the given object. Assumes its parent transform is the Board's.
   public Vector2Int GetObjectCell(GameObject obj) {
     return new Vector2Int((int)obj.transform.position.x, (int)obj.transform.position.z);
   }

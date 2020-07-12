@@ -1,6 +1,21 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 public class Game : MonoBehaviour {
+  public static KeyCode[] MovementKeyCodes = new KeyCode[4] {
+    KeyCode.W,
+    KeyCode.D,
+    KeyCode.S,
+    KeyCode.A
+  };
+
+  public static Vector2Int[] MovementDirections = new Vector2Int[4] {
+    Vector2Int.up,
+    Vector2Int.right,
+    Vector2Int.down,
+    Vector2Int.left
+  };
+
   enum GameState { ActiveBoard, CompletedBoard, Ending }
 
   [SerializeField] int MAX_LIGHTBEAM_BOUNCES = 6;
@@ -77,30 +92,6 @@ public class Game : MonoBehaviour {
     }
   }
 
-  public static KeyCode[] MovementKeyCodes = new KeyCode[4] {
-    KeyCode.W,
-    KeyCode.D,
-    KeyCode.S,
-    KeyCode.A
-  };
-
-  public static Vector2Int[] MovementDirections = new Vector2Int[4] {
-    Vector2Int.up,
-    Vector2Int.right,
-    Vector2Int.down,
-    Vector2Int.left
-  };
-
-  /*
-  When light hits an emitter it should glow brightly 
-  If you have won stop the heartbeat and hold for some time
-  Turn off the indicator
-  Turn off the emitters
-  Play the transition from the old to new board
-  Play the trasformation animation for the new Emitters
-  Turn on the indicator to resume play
-  */
-
   // Active Board State
   void UpdateActiveBoard(float dt) {
     // Debug stuff.
@@ -137,9 +128,7 @@ public class Game : MonoBehaviour {
     }
 
     if (Board.LightSink.BeamStrikesThisFrame > 0) {
-      State = GameState.CompletedBoard;
-      MusicAudioSource.clip = Board.WinningMusic;
-      MusicAudioSource.Play();
+      StartCoroutine(LevelCompletionSequence());
     }
   }
 
@@ -158,21 +147,61 @@ public class Game : MonoBehaviour {
     }
   }
 
+  [SerializeField] float PauseOnVictoryDuration = 2f;
+  [SerializeField] float TransitionOutDuration = 1f;
+  [SerializeField] float TransitionInDuration = 1f;
+  [SerializeField] float TransformSinksDuration = 1f;
 
-  // Completed Board State
-  void UpdateCompletedBoard(float dt) {
-    // Input handling
-    if (Input.GetKeyDown(KeyCode.Space)) {
-      LoadNextBoard();
+  IEnumerator LevelCompletionSequence() {
+    float victoryTimer = 0f;
+
+    State = GameState.CompletedBoard;
+    MusicAudioSource.clip = Board.WinningMusic;
+    MusicAudioSource.Play();
+    SelectionIndicator.gameObject.SetActive(false);
+
+    // hold with lasers drawn and light emitting from sinks
+    while (victoryTimer < PauseOnVictoryDuration) {
+      yield return null;
+      Debug.Log($"{PauseOnVictoryDuration - victoryTimer} seconds remaining for victory.");
+      victoryTimer += Time.deltaTime;
     }
 
-    SelectionIndicator.gameObject.SetActive(false);
+    // transition out the old board
+    Debug.Log("Old board going away sir!");
+    yield return new WaitForSeconds(TransitionOutDuration);
+
+
+    // transition in the new board
+    Debug.Log("New board comin in sir!");
+    BoardIndex = (BoardIndex + 1) % Boards.Length;
+
+    Board newBoard = Instantiate(Boards[BoardIndex]);
+
+    yield return new WaitForSeconds(TransitionInDuration);
+
+
+    // transform Sinks to Emitters
+    Debug.Log("Transform sinks to Emitters");
+    yield return new WaitForSeconds(TransformSinksDuration);
+
+
+    // swap in new emitters
+    Debug.Log("Swapping in new Emitters");
+    // TODO: Destroy detached sinks from previous Board
+    Destroy(Board.gameObject);
+
+
+    // enter play mode
+    Debug.Log("Entering play!");
+    Board = newBoard;
+    SelectedMirror = Board.GetComponentInChildren<Mirror>();
+    MusicAudioSource.Stop();
+    beatTimer = 0;
+    quarterBeats = 0;
+    State = GameState.ActiveBoard;
+    SelectionIndicator.gameObject.SetActive(true);
   }
-
-  void FixedUpdateCompletedBoard(float dt) {
-
-  }
-
 
   // Ending State;
   void UpdateEnding(float dt) {
@@ -193,7 +222,6 @@ public class Game : MonoBehaviour {
     break;
 
     case GameState.CompletedBoard:
-    UpdateCompletedBoard(dt);
     break;
 
     case GameState.Ending:
@@ -211,7 +239,6 @@ public class Game : MonoBehaviour {
     break;
 
     case GameState.CompletedBoard:
-    FixedUpdateCompletedBoard(dt);
     break;
 
     case GameState.Ending:
