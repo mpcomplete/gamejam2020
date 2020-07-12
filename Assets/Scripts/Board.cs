@@ -24,10 +24,12 @@ public class Board : MonoBehaviour {
   [SerializeField] PlayableAsset IntroPlayable = null;
   [SerializeField] PlayableAsset OutroPlayable = null;
 
+  public float BeatPeriod = 1f;
   public PlayObject SelectedObject;
   public Vector2Int Min = Vector2Int.zero;
   public Vector2Int Max = new Vector2Int(10, 10);
   public AudioClip Music;
+  public bool Frozen = false;
 
   public LightNode MarchLightTree(LightSource source, Dictionary<PlayObject, List<LightBeam>> collisions, int maxDepth) {
     LightNode root = new LightNode {

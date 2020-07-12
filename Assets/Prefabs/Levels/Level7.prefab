@@ -2934,6 +2934,16 @@ PrefabInstance:
       propertyPath: SelectedObject
       value: 
       objectReference: {fileID: 2840479546481729312}
+    - target: {fileID: 5730713804920128683, guid: 4a3babbd2638dab449c756215956fb47,
+        type: 3}
+      propertyPath: BeatPeriod
+      value: 0.666667
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730713804920128683, guid: 4a3babbd2638dab449c756215956fb47,
+        type: 3}
+      propertyPath: Music
+      value: 
+      objectReference: {fileID: 8300000, guid: c7d17481b1c78564d93b41d89c13f921, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4a3babbd2638dab449c756215956fb47, type: 3}
 --- !u!4 &7085659047807265715 stripped

@@ -24,8 +24,10 @@ public class Game : MonoBehaviour {
   [SerializeField] int MAX_LIGHTBEAM_BOUNCES = 6;
   [Header("Audio")]
   [SerializeField] AudioSource MusicAudioSource = null;
+  [SerializeField] AudioSource SFXAudioSource = null;
   [SerializeField] AudioSource BeatAudioSource = null;
-  [SerializeField] AudioClip WinningMusic = null;
+  [SerializeField] AudioClip VictoryAudioClip = null;
+  [SerializeField] float MusicVolume = .2f;
 
   [Header("Boards")]
   [SerializeField] Board Board = null;
@@ -60,6 +62,9 @@ public class Game : MonoBehaviour {
     Board = board;
     State = GameState.ActiveBoard;
     MusicAudioSource.Stop();
+    MusicAudioSource.clip = Board.Music;
+    MusicAudioSource.volume = MusicVolume;
+    MusicAudioSource.Play();
     beatTimer = Time.time;
     quarterBeats = 0;
     //SelectionIndicator.gameObject.SetActive(true);
@@ -122,6 +127,7 @@ public class Game : MonoBehaviour {
       obj.OnNoncollide();
   }
 
+  [SerializeField] bool DebugMode = false;
   int debugIndex = -1;
   PlayObject debugObject { get => debugIndex < 0 ? null : Board.GetPlayObjects()[debugIndex]; }
 
@@ -159,46 +165,51 @@ public class Game : MonoBehaviour {
     }
     MarchLightTrees();
 
-    if (Input.GetKeyDown(KeyCode.Equals) || Board.IsVictory()) {
+    if (Board.IsVictory()) {
       StartCoroutine(LevelCompletionSequence());
     }
 
     // Debug stuff
-    if (Input.GetKeyDown(KeyCode.Minus)) {
-      Destroy(Board.gameObject);
-      BoardIndex = (BoardIndex + 1) % Boards.Length;
-      Board newBoard = Instantiate(Boards[BoardIndex]);
-      StartLevel(newBoard);
-    }
-    if (Input.GetKeyDown(KeyCode.Tab)) {
-      if (Input.GetKey(KeyCode.LeftShift)) {
-        debugIndex = -1;
-      } else {
-        do {
-          debugIndex = (debugIndex + 1) % Board.GetPlayObjects().Length;
-        } while (!(debugObject.GetComponent<Mirror>() || debugObject.GetComponent<LightSource>() || debugObject.GetComponent<Splitter>()));
-        Debug.Log($"Selected {debugObject} at {debugObject.transform.position}");
-        DebugDumpLevel("Current state");
+    if (DebugMode) {
+      if (Input.GetKeyDown(KeyCode.Equals)) {
+        StartCoroutine(LevelCompletionSequence());
       }
-    }
-    if (Input.GetKeyDown(KeyCode.Comma) && debugIndex >= 0) {
-      debugObject.Orientation--;
-    }
-    if (Input.GetKeyDown(KeyCode.Period) && debugIndex >= 0) {
-      debugObject.Orientation++;
+      if (Input.GetKeyDown(KeyCode.Minus)) {
+        Destroy(Board.gameObject);
+        BoardIndex = (BoardIndex + 1) % Boards.Length;
+        Board newBoard = Instantiate(Boards[BoardIndex]);
+        StartLevel(newBoard);
+      }
+      if (Input.GetKeyDown(KeyCode.Tab)) {
+        if (Input.GetKey(KeyCode.LeftShift)) {
+          debugIndex = -1;
+        } else {
+          do {
+            debugIndex = (debugIndex + 1) % Board.GetPlayObjects().Length;
+          } while (!(debugObject.GetComponent<Mirror>() || debugObject.GetComponent<LightSource>() || debugObject.GetComponent<Splitter>()));
+          Debug.Log($"Selected {debugObject} at {debugObject.transform.position}");
+          DebugDumpLevel("Current state");
+        }
+      }
+      if (Input.GetKeyDown(KeyCode.Comma) && debugIndex >= 0) {
+        debugObject.Orientation--;
+      }
+      if (Input.GetKeyDown(KeyCode.Period) && debugIndex >= 0) {
+        debugObject.Orientation++;
+      }
     }
   }
 
   void FixedUpdateActiveBoard(float dt) {
-    float quarterPeriod = BeatPeriod / 4f;
+    float quarterPeriod = Board.BeatPeriod / 4f;
 
     while (beatTimer < Time.time) {
       beatTimer += quarterPeriod;
       quarterBeats++;
-      if (quarterBeats % 4 == 0)
-        BeatAudioSource.Play();
+      //if (quarterBeats % 4 == 0)
+      //  BeatAudioSource.Play();
 
-      if (debugIndex < 0) {
+      if (debugIndex < 0 && !Board.Frozen) {
         foreach (PlayObject obj in Board.GetPlayObjects()) {
           obj.OnQuarterBeat(quarterBeats);
         }
@@ -218,16 +229,18 @@ public class Game : MonoBehaviour {
 
     DebugDumpLevel("Won");
     State = GameState.CompletedBoard;
-    MusicAudioSource.clip = WinningMusic;
-    MusicAudioSource.Play();
+    SFXAudioSource.clip = VictoryAudioClip;
+    SFXAudioSource.Play();
     SelectionIndicator.gameObject.SetActive(false);
 
     // hold with lasers drawn and light emitting from sinks
     while (victoryTimer < PauseOnVictoryDuration) {
       MarchLightTrees();
+      MusicAudioSource.volume -= Time.deltaTime/PauseOnVictoryDuration*MusicVolume;
       yield return null;
       victoryTimer += Time.deltaTime;
     }
+    MusicAudioSource.Stop();
 
     // transition out the old board
     LightSink[] oldSinks = Board.GetSinks();
