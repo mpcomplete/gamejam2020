@@ -66,9 +66,10 @@ public class Game : MonoBehaviour {
   }
 
   void DebugDumpLevel(string prefix) {
-    var tmp1 = String.Join(",", Board.GetComponentsInChildren<LightSource>().Select(o => o.Heading.ToString()));
+    var tmp1 = String.Join(",", Board.GetComponentsInChildren<LightSource>().Select(o => o.Orientation.ToString()));
     var tmp2 = String.Join(",", Board.GetComponentsInChildren<Mirror>().Select(o => o.Orientation.ToString()));
-    Debug.Log($"{prefix} level {BoardIndex} Source:{tmp1}, mirrors:{tmp1}");
+    var tmp3 = String.Join(",", Board.GetComponentsInChildren<Splitter>().Select(o => o.Orientation.ToString()));
+    Debug.Log($"{prefix} level {BoardIndex} Source:{tmp1}, mirrors:{tmp2}, splitters:{tmp3}");
   }
 
   void RenderLightTree(LightNode tree) {

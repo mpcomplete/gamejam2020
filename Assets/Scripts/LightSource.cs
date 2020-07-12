@@ -30,6 +30,6 @@ public class LightSource : PlayObject {
   public void OnDrawGizmos() {
     Gizmos.color = UnityEngine.Color.green;
     Vector2Int dir = Board.Vector2IntHeadings[Heading];
-    Gizmos.DrawRay(transform.position, new Vector3(dir[0], 0, dir[1]));
+    Gizmos.DrawLine(transform.position, transform.position + new Vector3(dir[0], 0, dir[1]) * 7f);
   }
 }
