@@ -306,6 +306,11 @@ PrefabInstance:
       propertyPath: WinningMusic
       value: 
       objectReference: {fileID: 8300000, guid: 5d1659324f787ba4baf22fe45db8f142, type: 3}
+    - target: {fileID: 5730713804920128683, guid: 4a3babbd2638dab449c756215956fb47,
+        type: 3}
+      propertyPath: SelectedObject
+      value: 
+      objectReference: {fileID: 3845830957712771513}
     - target: {fileID: 6470992144371278792, guid: 4a3babbd2638dab449c756215956fb47,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -497,6 +502,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5fe5676d549990a429bbdbfa5d08a5ef, type: 3}
+--- !u!114 &3845830957712771513 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8231112615763660663, guid: 5fe5676d549990a429bbdbfa5d08a5ef,
+    type: 3}
+  m_PrefabInstance: {fileID: 5144777295126316750}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6277d443f0859244cb3ef9e5a254514a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &5702577523185927826
 PrefabInstance:
   m_ObjectHideFlags: 0

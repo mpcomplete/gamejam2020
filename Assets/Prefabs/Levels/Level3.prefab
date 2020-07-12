@@ -585,10 +585,22 @@ PrefabInstance:
     - target: {fileID: 1823461677229875917, guid: 5fe5676d549990a429bbdbfa5d08a5ef,
         type: 3}
       propertyPath: m_Name
-      value: Mirror (1)
+      value: Mirror
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5fe5676d549990a429bbdbfa5d08a5ef, type: 3}
+--- !u!114 &6215122495050104226 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8231112615763660663, guid: 5fe5676d549990a429bbdbfa5d08a5ef,
+    type: 3}
+  m_PrefabInstance: {fileID: 2628489932088570581}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6277d443f0859244cb3ef9e5a254514a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &3839528938195946663
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -873,6 +885,11 @@ PrefabInstance:
       propertyPath: LightSink
       value: 
       objectReference: {fileID: 9113919517801644912}
+    - target: {fileID: 5730713804920128683, guid: 4a3babbd2638dab449c756215956fb47,
+        type: 3}
+      propertyPath: SelectedObject
+      value: 
+      objectReference: {fileID: 6215122495050104226}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4a3babbd2638dab449c756215956fb47, type: 3}
 --- !u!4 &7085659047807265715 stripped
@@ -946,7 +963,7 @@ PrefabInstance:
     - target: {fileID: 1823461677229875917, guid: 5fe5676d549990a429bbdbfa5d08a5ef,
         type: 3}
       propertyPath: m_Name
-      value: Mirror
+      value: Mirror (1)
       objectReference: {fileID: 0}
     - target: {fileID: 8231112615763660663, guid: 5fe5676d549990a429bbdbfa5d08a5ef,
         type: 3}

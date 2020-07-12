@@ -23,6 +23,7 @@ public class Board : MonoBehaviour {
   [SerializeField] PlayableAsset IntroPlayable = null;
   [SerializeField] PlayableAsset OutroPlayable = null;
 
+  public LightStrikeableBase SelectedObject;
   public LightSource LightSource;
   public LightSink LightSink;
   public Vector2Int Min = Vector2Int.zero;

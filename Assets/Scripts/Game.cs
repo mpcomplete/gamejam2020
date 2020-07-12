@@ -44,7 +44,6 @@ public class Game : MonoBehaviour {
   int BoardIndex = 0;
   int LineRendererIndex = 0;
   GameState State = GameState.ActiveBoard;
-  Mirror SelectedMirror = null;
   float beatTimer = 0f;
   int quarterBeats = 0;
 
@@ -52,13 +51,11 @@ public class Game : MonoBehaviour {
     // TODO: This is a stupid hack but I am bad at thought
     foreach (var source in Board.GetSources())
       source.Animator.Play("Extend Arms", -1, 0);
-    SelectedMirror = Board.GetComponentInChildren<Mirror>();
     StartLevel(Board);
   }
 
   void StartLevel(Board board) {
     Board = board;
-    SelectedMirror = Board.GetComponentInChildren<Mirror>();
     State = GameState.ActiveBoard;
     MusicAudioSource.Stop();
     beatTimer = Time.time;
@@ -107,21 +104,23 @@ public class Game : MonoBehaviour {
   // Active Board State
   void UpdateActiveBoard(float dt) {
     // Movement handling
-    for (int i = 0; i < MovementDirections.Length; i++) {
-      if (Input.GetKeyDown(MovementKeyCodes[i]) && SelectedMirror) {
-        Vector2Int currentPosition = Board.GetObjectCell(SelectedMirror.gameObject);
-        Vector2Int direction = MovementDirections[i];
-        Vector2Int nextCell = currentPosition + direction;
+    if (Board.SelectedObject) {
+      for (int i = 0; i < MovementDirections.Length; i++) {
+        if (Input.GetKeyDown(MovementKeyCodes[i])) {
+          Vector2Int currentPosition = Board.GetObjectCell(Board.SelectedObject.gameObject);
+          Vector2Int direction = MovementDirections[i];
+          Vector2Int nextCell = currentPosition + direction;
 
-        if (Board.ValidMoveLocation(nextCell)) {
-          SelectedMirror.transform.position = Board.GridToWorldPosition(nextCell);
+          if (Board.ValidMoveLocation(nextCell)) {
+            Board.SelectedObject.transform.position = Board.GridToWorldPosition(nextCell);
+          }
         }
       }
     }
 
     // Selection indicator logic
-    if (SelectedMirror) {
-      Vector2Int selectedGridCell = Board.GetObjectCell(SelectedMirror.gameObject);
+    if (Board.SelectedObject) {
+      Vector2Int selectedGridCell = Board.GetObjectCell(Board.SelectedObject.gameObject);
       Vector3 selectedPosition = Vector3.up + Board.GridToWorldPosition(selectedGridCell);
 
       SelectionIndicator.gameObject.SetActive(true);
