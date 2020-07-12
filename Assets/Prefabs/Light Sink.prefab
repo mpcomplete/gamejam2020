@@ -45,6 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c18217d4cd01aac4e8feb92128d7e198, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  orientation: 0
   Animator: {fileID: 8504527633414067805}
   BeamStrikesThisFrame: 0
 --- !u!1001 &1527339511615414079

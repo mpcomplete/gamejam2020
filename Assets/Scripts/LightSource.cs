@@ -7,12 +7,6 @@ public class LightSource : LightStrikeableBase {
   public LightBeamColor Color = LightBeamColor.white;
   public bool DebugMode = false;
 
-  public void Start()
-  {
-      Animator.SetTrigger("Power Up");
-      Animator.SetTrigger("Extend Arms");
-  }
-
   public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {
     List<LightBeam> result = new List<LightBeam>();
     if (input == null) {
