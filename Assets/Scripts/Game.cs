@@ -54,11 +54,16 @@ public class Game : MonoBehaviour {
     Destroy(Board.gameObject);
     BoardIndex = (BoardIndex + 1) % Boards.Length;
     Board = Instantiate(Boards[BoardIndex]);
+    StartLevel();
+  }
+  
+  void StartLevel() {
     SelectedMirror = Board.GetComponentInChildren<Mirror>();
     State = GameState.ActiveBoard;
     MusicAudioSource.Stop();
-    beatTimer = 0;
+    beatTimer = Time.time;
     quarterBeats = 0;
+    //SelectionIndicator.gameObject.SetActive(true);
     DebugDumpLevel("Starting");
   }
 
@@ -223,12 +228,7 @@ public class Game : MonoBehaviour {
     // enter play mode
     Debug.Log("Entering play!");
     Board = newBoard;
-    SelectedMirror = Board.GetComponentInChildren<Mirror>();
-    MusicAudioSource.Stop();
-    beatTimer = 0;
-    quarterBeats = 0;
-    State = GameState.ActiveBoard;
-    SelectionIndicator.gameObject.SetActive(true);
+    StartLevel();
   }
 
   // Ending State;
@@ -240,22 +240,21 @@ public class Game : MonoBehaviour {
 
   }
 
-
   void Update() {
     float dt = Time.deltaTime;
 
     LineRendererIndex = 0;
     switch (State) {
     case GameState.ActiveBoard:
-    UpdateActiveBoard(dt);
-    break;
+      UpdateActiveBoard(dt);
+      break;
 
     case GameState.CompletedBoard:
-    break;
+      break;
 
     case GameState.Ending:
-    UpdateEnding(dt);
-    break;
+      UpdateEnding(dt);
+      break;
     }
     DisableUnusedLineRenderers();
   }
@@ -265,15 +264,15 @@ public class Game : MonoBehaviour {
 
     switch (State) {
     case GameState.ActiveBoard:
-    FixedUpdateActiveBoard(dt);
-    break;
+      FixedUpdateActiveBoard(dt);
+      break;
 
     case GameState.CompletedBoard:
-    break;
+      break;
 
     case GameState.Ending:
-    FixedUpdateEnding(dt);
-    break;
+      FixedUpdateEnding(dt);
+      break;
     }
   }
 }
