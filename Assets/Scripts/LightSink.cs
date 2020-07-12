@@ -2,6 +2,7 @@
 using UnityEngine;
 
 public class LightSink : LightStrikeableBase {
+  public Animator Animator;
   public int BeamStrikesThisFrame = 0;
 
   public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {

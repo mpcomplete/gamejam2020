@@ -3,9 +3,16 @@ using System.Linq;
 using UnityEngine;
 
 public class LightSource : LightStrikeableBase {
+  public Animator Animator;
   public LightBeamColor Color = LightBeamColor.white;
   public int Heading = 0;
   public bool DebugMode = false;
+
+  public void Start()
+  {
+      Animator.SetTrigger("Power Up");
+      Animator.SetTrigger("Extend Arms");
+  }
 
   public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {
     List<LightBeam> result = new List<LightBeam>();

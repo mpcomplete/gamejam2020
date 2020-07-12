@@ -46,19 +46,6 @@ public class Game : MonoBehaviour {
     SelectedMirror = Board.GetComponentInChildren<Mirror>();
   }
 
-  [ContextMenu("Load Next Board")]
-  public void LoadNextBoard() {
-    Destroy(Board.gameObject);
-    BoardIndex = (BoardIndex + 1) % Boards.Length;
-    Board = Instantiate(Boards[BoardIndex]);
-    SelectedMirror = Board.GetComponentInChildren<Mirror>();
-    State = GameState.ActiveBoard;
-    MusicAudioSource.Stop();
-    beatTimer = 0;
-    quarterBeats = 0;
-    Debug.Log($"Starting board with heading={Board.LightSource.Heading}, beat={quarterBeats}, {beatTimer}");
-  }
-
   void RenderLightTree(LightNode tree) {
     RenderLightNode(tree);
   }
@@ -93,11 +80,7 @@ public class Game : MonoBehaviour {
 
   // Active Board State
   void UpdateActiveBoard(float dt) {
-    // Debug stuff.
-    if (Input.GetKeyDown(KeyCode.Equals))
-      LoadNextBoard();
-
-    // Input handling
+    // Movement handling
     for (int i = 0; i < MovementDirections.Length; i++) {
       if (Input.GetKeyDown(MovementKeyCodes[i]) && SelectedMirror) {
         Vector2Int currentPosition = Board.GetObjectCell(SelectedMirror.gameObject);
@@ -137,7 +120,7 @@ public class Game : MonoBehaviour {
       RenderLightTree(lightTree);
     }
 
-    if (Board.LightSink.BeamStrikesThisFrame > 0) {
+    if (Input.GetKeyDown(KeyCode.Equals) || Board.LightSink.BeamStrikesThisFrame > 0) {
       StartCoroutine(LevelCompletionSequence());
     }
   }
