@@ -205,7 +205,6 @@ public class Game : MonoBehaviour {
       Destroy(sink.gameObject);
     }
 
-
     // transition in the new board
     BoardIndex = (BoardIndex + 1) % Boards.Length;
     Board newBoard = Instantiate(Boards[BoardIndex]);
