@@ -53,7 +53,6 @@ public class Game : MonoBehaviour {
     foreach (var source in Board.GetSources())
       source.Animator.Play("Extend Arms", -1, 0);
     SelectedMirror = Board.GetComponentInChildren<Mirror>();
-    DebugDumpLevel("Starting");
     StartLevel(Board);
   }
 
