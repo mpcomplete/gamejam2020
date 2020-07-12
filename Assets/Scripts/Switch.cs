@@ -1,21 +1,26 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public delegate void OnSwitchTriggered(bool enabled);
+public delegate void OnSwitchToggled(bool on);
 
 public class Switch : LightStrikeableBase {
-  public OnSwitchTriggered OnSwitchTriggered = null;
+  public OnSwitchToggled OnToggled = null;
+  public bool On = false;
+  public MeshRenderer Renderer = null;
+  public Material EnabledMaterial = null;
+  public Material DisabledMaterial = null;
+
+  private void OnEnable() {
+    Renderer.material = On ? EnabledMaterial : DisabledMaterial;
+  }
 
   public override void OnCollide(LightBeam input) {
-    HandleSwitchTriggered(true);
+    HandleSwitchToggled(true);
   }
 
-  void HandleSwitchTriggered(bool enabled) {
-    if (enabled)
-      GetComponent<MeshRenderer>().material.SetColor("_EmissionColor", Color.yellow * 1.8f);
-    else
-      GetComponent<MeshRenderer>().material.SetColor("_EmissionColor", Color.black);
-    //OnSwitchTriggered(enabled);
+  void HandleSwitchToggled(bool on) {
+    On = on;
+    Renderer.material = on ? EnabledMaterial : DisabledMaterial;
+    OnToggled?.Invoke(on);
   }
+
 }

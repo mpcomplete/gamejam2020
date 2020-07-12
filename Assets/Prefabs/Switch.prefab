@@ -122,6 +122,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a344650ebc1a914da1c2212acb21164, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  On: 0
+  Renderer: {fileID: 2139060968125961023}
+  EnabledMaterial: {fileID: 2100000, guid: f18429368559e7e45afe75425635736f, type: 2}
+  DisabledMaterial: {fileID: 2100000, guid: 67a6591c4568d054ca617637184c91cd, type: 2}
 --- !u!1 &8885192718123615580
 GameObject:
   m_ObjectHideFlags: 0
