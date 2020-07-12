@@ -66,8 +66,9 @@ public class Game : MonoBehaviour {
   }
 
   void DebugDumpLevel(string prefix) {
-    var tmp = String.Join(",", Board.GetComponentsInChildren<Mirror>().Select(m => m.Orientation.ToString()));
-    Debug.Log($"{prefix} level {BoardIndex} Source:{Board.LightSource.Heading}, mirrors:{tmp}");
+    var tmp1 = String.Join(",", Board.GetComponentsInChildren<LightSource>().Select(o => o.Heading.ToString()));
+    var tmp2 = String.Join(",", Board.GetComponentsInChildren<Mirror>().Select(o => o.Orientation.ToString()));
+    Debug.Log($"{prefix} level {BoardIndex} Source:{tmp1}, mirrors:{tmp1}");
   }
 
   void RenderLightTree(LightNode tree) {
@@ -102,6 +103,20 @@ public class Game : MonoBehaviour {
     }
   }
 
+  void MarchLightTrees() {
+    var noncollided = new HashSet<LightStrikeableBase>(Board.GetPlayObjects());
+    var collided = new Dictionary<LightStrikeableBase, List<LightBeam>>();
+    foreach (LightSource source in Board.GetSources()) {
+      RenderLightTree(Board.MarchLightTree(source, collided, MAX_LIGHTBEAM_BOUNCES));
+    }
+    foreach (var kv in collided) {
+      noncollided.Remove(kv.Key);
+      kv.Key.OnCollide(kv.Value);
+    }
+    foreach (var obj in noncollided)
+      obj.OnNoncollide();
+  }
+
   // Active Board State
   void UpdateActiveBoard(float dt) {
     // Movement handling
@@ -131,22 +146,9 @@ public class Game : MonoBehaviour {
     }
 
     // Update and draw the light beams
-    {
-      var noncollided = new HashSet<LightStrikeableBase>(Board.GetPlayObjects());
-      var collided = new Dictionary<LightStrikeableBase, List<LightBeam>>();
-      var lightTree = Board.MarchLightTree(collided, MAX_LIGHTBEAM_BOUNCES);
+    MarchLightTrees();
 
-      foreach (var kv in collided) {
-        noncollided.Remove(kv.Key);
-        kv.Key.OnCollide(kv.Value);
-      }
-      foreach (var obj in noncollided)
-        obj.OnNoncollide();
-
-      RenderLightTree(lightTree);
-    }
-
-    if (Input.GetKeyDown(KeyCode.Equals) || Board.LightSink.BeamStrikesThisFrame > 0) {
+    if (Input.GetKeyDown(KeyCode.Equals) || Board.IsVictory()) {
       StartCoroutine(LevelCompletionSequence());
     }
     if (Input.GetKeyDown(KeyCode.Minus)) {
@@ -190,18 +192,7 @@ public class Game : MonoBehaviour {
 
     // hold with lasers drawn and light emitting from sinks
     while (victoryTimer < PauseOnVictoryDuration) {
-      var noncollided = new HashSet<LightStrikeableBase>(Board.GetPlayObjects());
-      var collided = new Dictionary<LightStrikeableBase, List<LightBeam>>();
-      var lightTree = Board.MarchLightTree(collided, MAX_LIGHTBEAM_BOUNCES);
-
-      foreach (var kv in collided) {
-        noncollided.Remove(kv.Key);
-        kv.Key.OnCollide(kv.Value);
-      }
-      foreach (var obj in noncollided)
-        obj.OnNoncollide();
-
-      RenderLightTree(lightTree);
+      MarchLightTrees();
       yield return null;
       victoryTimer += Time.deltaTime;
     }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Playables;
 
@@ -24,21 +25,20 @@ public class Board : MonoBehaviour {
   [SerializeField] PlayableAsset OutroPlayable = null;
 
   public LightStrikeableBase SelectedObject;
-  public LightSource LightSource;
-  public LightSink LightSink;
   public Vector2Int Min = Vector2Int.zero;
   public Vector2Int Max = new Vector2Int(10, 10);
   public AudioClip Music;
 
-  public LightNode MarchLightTree(Dictionary<LightStrikeableBase, List<LightBeam>> collisions, int maxDepth) {
-    LightNode rootNode = new LightNode { Object = LightSource, Position = GetLightSourceCell() };
-
-    rootNode.LightBeams = LightSource.ComputeOutgoingLightBeams(null);
-
-    foreach (LightBeam lightBeam in rootNode.LightBeams) {
-      rootNode.LightNodes.Add(March(rootNode.Position, lightBeam, collisions, maxDepth));
+  public LightNode MarchLightTree(LightSource source, Dictionary<LightStrikeableBase, List<LightBeam>> collisions, int maxDepth) {
+    LightNode root = new LightNode {
+      Object = source,
+      Position = GetObjectCell(source.gameObject),
+      LightBeams = source.ComputeOutgoingLightBeams(null)
+    };
+    foreach (LightBeam lightBeam in root.LightBeams) {
+      root.LightNodes.Add(March(root.Position, lightBeam, collisions, maxDepth));
     }
-    return rootNode;
+    return root;
   }
 
   public LightNode March(Vector2Int position, LightBeam beam, Dictionary<LightStrikeableBase, List<LightBeam>> collisions, int depth) {
@@ -84,14 +84,6 @@ public class Board : MonoBehaviour {
     return (float)OutroPlayable.duration;
   }
 
-  public Vector2Int GetLightSourceCell() {
-    return GetObjectCell(LightSource.gameObject);
-  }
-
-  public Vector2Int GetLightSinkCell() {
-    return GetObjectCell(LightSink.gameObject);
-  }
-
   public bool ValidMoveLocation(Vector2Int v) {
     return !OutOfBounds(v) && HasFloorAtCell(v) && (GetObjectAtCell(v) == null);
   }
@@ -99,6 +91,8 @@ public class Board : MonoBehaviour {
   public bool OutOfBounds(Vector2Int v) {
     return v.x < Min.x || v.y < Min.y || v.x > Max.x || v.y > Max.y;
   }
+
+  public bool IsVictory() => GetSinks().All(s => s.BeamStrikesThisFrame > 0);
 
   public LightStrikeableBase[] GetPlayObjects() => GetComponentsInChildren<LightStrikeableBase>();
   public LightSink[] GetSinks() => GetComponentsInChildren<LightSink>();

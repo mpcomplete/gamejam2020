@@ -418,7 +418,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 581896879}
-  m_LocalRotation: {x: 0.44364712, y: -0.000000015422657, z: 0.000000007634685, w: 0.8962016}
+  m_LocalRotation: {x: 0.44364712, y: -0.000000015566403, z: 0.000000007705844, w: 0.8962016}
   m_LocalPosition: {x: 0, y: 12, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -1444,7 +1444,7 @@ MonoBehaviour:
   - {fileID: 2044050099}
   - {fileID: 2044050098}
   - {fileID: 2044050097}
-  BeatPeriodInMS: 1000
+  BeatPeriod: 1
   PauseOnVictoryDuration: 2
   TransformSinksDuration: 1
   RotationalEpsilon: 0.00001
@@ -1542,7 +1542,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1528109961}
-  m_LocalRotation: {x: 0.44364712, y: -0.000000015422657, z: 0.000000007634685, w: 0.8962016}
+  m_LocalRotation: {x: 0.44364712, y: -0.000000015566403, z: 0.000000007705844, w: 0.8962016}
   m_LocalPosition: {x: 0, y: 12, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
