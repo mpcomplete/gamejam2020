@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-// TODO: rename? Interactable?
 public abstract class PlayObject : MonoBehaviour {
   // 0-15, 0 is forward, n is n/16th of a revolution around.
   [SerializeField] int orientation = 0;
