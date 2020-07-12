@@ -68,9 +68,7 @@ public class Game : MonoBehaviour {
   }
 
   void RenderLightTree(LightNode tree) {
-    LineRendererIndex = 0;
     RenderLightNode(tree);
-    DisableUnusedLineRenderers();
   }
 
   void RenderLightNode(LightNode node) {
@@ -168,8 +166,6 @@ public class Game : MonoBehaviour {
   }
 
   [SerializeField] float PauseOnVictoryDuration = 2f;
-  [SerializeField] float TransitionOutDuration = 1f;
-  [SerializeField] float TransitionInDuration = 1f;
   [SerializeField] float TransformSinksDuration = 1f;
 
   IEnumerator LevelCompletionSequence() {
@@ -183,14 +179,26 @@ public class Game : MonoBehaviour {
 
     // hold with lasers drawn and light emitting from sinks
     while (victoryTimer < PauseOnVictoryDuration) {
+      var noncollided = new HashSet<LightStrikeableBase>(Board.GetPlayObjects());
+      var collided = new Dictionary<LightStrikeableBase, List<LightBeam>>();
+      var lightTree = Board.MarchLightTree(collided, MAX_LIGHTBEAM_BOUNCES);
+
+      foreach (var kv in collided) {
+        noncollided.Remove(kv.Key);
+        kv.Key.OnCollide(kv.Value);
+      }
+      foreach (var obj in noncollided)
+        obj.OnNoncollide();
+
+      RenderLightTree(lightTree);
       yield return null;
-      Debug.Log($"{PauseOnVictoryDuration - victoryTimer} seconds remaining for victory.");
       victoryTimer += Time.deltaTime;
     }
 
     // transition out the old board
     Debug.Log("Old board going away sir!");
-    yield return new WaitForSeconds(TransitionOutDuration);
+    yield return new WaitForSeconds(Board.PlayOutro());
+    Destroy(Board.gameObject);
 
 
     // transition in the new board
@@ -199,7 +207,7 @@ public class Game : MonoBehaviour {
 
     Board newBoard = Instantiate(Boards[BoardIndex]);
 
-    yield return new WaitForSeconds(TransitionInDuration);
+    yield return new WaitForSeconds(newBoard.PlayIntro());
 
 
     // transform Sinks to Emitters
@@ -210,7 +218,6 @@ public class Game : MonoBehaviour {
     // swap in new emitters
     Debug.Log("Swapping in new Emitters");
     // TODO: Destroy detached sinks from previous Board
-    Destroy(Board.gameObject);
 
 
     // enter play mode
@@ -237,6 +244,7 @@ public class Game : MonoBehaviour {
   void Update() {
     float dt = Time.deltaTime;
 
+    LineRendererIndex = 0;
     switch (State) {
     case GameState.ActiveBoard:
     UpdateActiveBoard(dt);
@@ -249,6 +257,7 @@ public class Game : MonoBehaviour {
     UpdateEnding(dt);
     break;
     }
+    DisableUnusedLineRenderers();
   }
 
   void FixedUpdate() {
