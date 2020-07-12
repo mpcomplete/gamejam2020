@@ -7,9 +7,7 @@ public abstract class LightStrikeableBase : MonoBehaviour {
   [SerializeField] int orientation = 0;
   public int Orientation {
     get => orientation;
-    set {
-      orientation = (value+16)%16;
-    }
+    set => orientation = (value+16)%16;
   }
   public int Heading {
     get => orientation/2;

@@ -36,7 +36,7 @@ public class Game : MonoBehaviour {
   [SerializeField] LineRenderer[] LineRenderers = null;
 
   [Header("Gameplay")]
-  [SerializeField] float BeatPeriodInMS = 1000f;
+  [SerializeField] float BeatPeriod = 1f;
   [SerializeField] float PauseOnVictoryDuration = 2f;
   [SerializeField] float TransformSinksDuration = 1f;
   [SerializeField] float RotationalEpsilon = 1e-5f;
@@ -158,7 +158,7 @@ public class Game : MonoBehaviour {
   }
 
   void FixedUpdateActiveBoard(float dt) {
-    float quarterPeriod = BeatPeriodInMS / 1000f / 4f;
+    float quarterPeriod = BeatPeriod / 4f;
 
     while (beatTimer < Time.time) {
       beatTimer += quarterPeriod;
