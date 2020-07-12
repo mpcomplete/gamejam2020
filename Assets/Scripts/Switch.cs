@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public delegate void OnSwitchToggled(bool on);
 [System.Serializable] public class BoolEvent : UnityEvent<bool> { }
 
 public class Switch : PlayObject {

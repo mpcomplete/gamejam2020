@@ -4,9 +4,11 @@ using UnityEngine;
 
 public class Splitter : PlayObject {
   [SerializeField] int[] BeamHeadingOffsets = { -1, 1 };
+  [SerializeField] LightBeamColor[] BeamColors = { LightBeamColor.white, LightBeamColor.white };
 
   public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {
-    return BeamHeadingOffsets.Select(heading => new LightBeam { Color = input.Color, Heading = (8 + input.Heading + heading + Heading) % 8 }).ToList();
+    return Enumerable.Range(0, BeamHeadingOffsets.Length).Select(
+      i => new LightBeam { Color = BeamColors[i], Heading = (8 + input.Heading + Heading + BeamHeadingOffsets[i]) % 8 }).ToList();
   }
 
   public override void OnQuarterBeat(int counter) {

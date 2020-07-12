@@ -150,6 +150,9 @@ public class Game : MonoBehaviour {
     }
 
     // Update and draw the light beams
+    foreach (LightSink sink in Board.GetSinks()) {
+      sink.BeamStrikesThisFrame = 0;
+    }
     MarchLightTrees();
 
     if (Input.GetKeyDown(KeyCode.Equals) || Board.IsVictory()) {
@@ -171,6 +174,7 @@ public class Game : MonoBehaviour {
           debugIndex = (debugIndex + 1) % Board.GetPlayObjects().Length;
         } while (!(debugObject.GetComponent<Mirror>() || debugObject.GetComponent<LightSource>() || debugObject.GetComponent<Splitter>()));
         Debug.Log($"Selected {debugObject} at {debugObject.transform.position}");
+        DebugDumpLevel("Current state");
       }
     }
     if (Input.GetKeyDown(KeyCode.Comma) && debugIndex >= 0) {

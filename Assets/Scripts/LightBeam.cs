@@ -30,7 +30,7 @@ public class LightBeam {
     switch (Color) {
     case LightBeamColor.red: return UnityEngine.Color.red*1.8f;
     case LightBeamColor.green: return UnityEngine.Color.green*1.8f;
-    case LightBeamColor.blue: return UnityEngine.Color.cyan*1.8f;
+    case LightBeamColor.blue: return UnityEngine.Color.blue*1.8f;
     case LightBeamColor.yellow: return UnityEngine.Color.yellow*1.8f;
     case LightBeamColor.purple: return UnityEngine.Color.magenta*1.8f;
     case LightBeamColor.cyan: return new UnityEngine.Color(.2f, .5f, .5f)*2.5f;
