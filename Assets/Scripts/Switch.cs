@@ -11,6 +11,9 @@ public class Switch : LightStrikeableBase {
   public Material EnabledMaterial = null;
   public Material DisabledMaterial = null;
   public GameObject OnTriggerVanishTarget = null;
+  [Header("Audio")]
+  public AudioSource AudioSource = null;
+  public AudioClip VanishTargetClip = null;
 
   private void OnEnable() {
     Renderer.material = On ? EnabledMaterial : DisabledMaterial;
@@ -38,6 +41,8 @@ public class Switch : LightStrikeableBase {
   IEnumerator VanishTarget() {
     const float duration = .5f;
     float timer = 0f;
+    AudioSource.clip = VanishTargetClip;
+    AudioSource.Play();
     while (timer < duration) {
       OnTriggerVanishTarget.transform.position += Vector3.down*Time.deltaTime/duration;
       yield return null;
