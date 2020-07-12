@@ -418,7 +418,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 581896879}
-  m_LocalRotation: {x: 0.41369665, y: 0.000000015664947, z: -0.000000007118224, w: 0.9104148}
+  m_LocalRotation: {x: 0.41369665, y: -0.000000015673837, z: 0.0000000071222632, w: 0.9104148}
   m_LocalPosition: {x: 4.5, y: 12, z: -7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -952,6 +952,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b6a4ceb84e0f8d4898e9dc869b44af2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  MAX_LIGHTBEAM_BOUNCES: 6
   MusicAudioSource: {fileID: 901820483}
   BeatAudioSource: {fileID: 458831317}
   Board: {fileID: 358684634}
@@ -959,6 +960,7 @@ MonoBehaviour:
   - {fileID: 8090770210332311632, guid: c8558f1798e2f1e48b8c5f207d51667f, type: 3}
   - {fileID: 1037489852600292468, guid: d2f1641e8afc45f42860bf6e0de4e8f5, type: 3}
   - {fileID: 1913581498766471175, guid: 57eaf4ce688efbe48a15f738f6f138bf, type: 3}
+  - {fileID: 1913581498766471175, guid: 88dda005cc086e24ba623d80052f97bf, type: 3}
   SelectionIndicator: {fileID: 7343528108515389431}
   LineRenderers:
   - {fileID: 2044050096}
@@ -1442,7 +1444,6 @@ MonoBehaviour:
   - {fileID: 2044050098}
   - {fileID: 2044050097}
   BeatPeriodInMS: 1000
-  EnableVariableSelection: 1
 --- !u!4 &1518185182
 Transform:
   m_ObjectHideFlags: 0
@@ -1512,7 +1513,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 5000
-  field of view: 31.943426
+  field of view: 31.97995
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -1537,7 +1538,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1528109961}
-  m_LocalRotation: {x: 0.41369665, y: 0.000000015664947, z: -0.000000007118224, w: 0.9104148}
+  m_LocalRotation: {x: 0.41369665, y: -0.000000015673837, z: 0.0000000071222632, w: 0.9104148}
   m_LocalPosition: {x: 4.5, y: 12, z: -7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []

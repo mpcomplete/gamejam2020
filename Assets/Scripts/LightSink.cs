@@ -8,7 +8,7 @@ public class LightSink : LightStrikeableBase {
     return new List<LightBeam>();
   }
 
-  public override void OnCollide(LightBeam lb) {
+  public override void OnCollide(List<LightBeam> lb) {
     BeamStrikesThisFrame++;
   }
 }
