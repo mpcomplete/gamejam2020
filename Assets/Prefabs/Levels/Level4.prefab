@@ -1487,6 +1487,11 @@ PrefabInstance:
       propertyPath: Max.y
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 5730713804920128683, guid: 4a3babbd2638dab449c756215956fb47,
+        type: 3}
+      propertyPath: SelectedObject
+      value: 
+      objectReference: {fileID: 2840479546481729312}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4a3babbd2638dab449c756215956fb47, type: 3}
 --- !u!4 &7085659047807265715 stripped
@@ -1569,6 +1574,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5fe5676d549990a429bbdbfa5d08a5ef, type: 3}
+--- !u!114 &2840479546481729312 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8231112615763660663, guid: 5fe5676d549990a429bbdbfa5d08a5ef,
+    type: 3}
+  m_PrefabInstance: {fileID: 6147871202923384919}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6277d443f0859244cb3ef9e5a254514a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &6225641723428050709
 PrefabInstance:
   m_ObjectHideFlags: 0
