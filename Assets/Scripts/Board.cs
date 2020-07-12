@@ -92,7 +92,7 @@ public class Board : MonoBehaviour {
   }
 
   public bool ValidMoveLocation(Vector2Int v) {
-    return !OutOfBounds(v) && (GetObjectAtCell(v) == null);
+    return !OutOfBounds(v) && HasFloorAtCell(v) && (GetObjectAtCell(v) == null);
   }
 
   public bool OutOfBounds(Vector2Int v) {
@@ -114,5 +114,9 @@ public class Board : MonoBehaviour {
 
   public Vector2Int GetObjectCell(GameObject obj) {
     return new Vector2Int((int)obj.transform.position.x, (int)obj.transform.position.z);
+  }
+
+  public bool HasFloorAtCell(Vector2Int cell) {
+    return Physics.Raycast(GridToWorldPosition(cell), Vector3.down, .5f);
   }
 }
