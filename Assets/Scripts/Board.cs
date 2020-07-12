@@ -28,6 +28,7 @@ public class Board : MonoBehaviour {
   public Vector2Int Min = Vector2Int.zero;
   public Vector2Int Max = new Vector2Int(10, 10);
   public AudioClip Music;
+  public bool Frozen = false;
 
   public LightNode MarchLightTree(LightSource source, Dictionary<PlayObject, List<LightBeam>> collisions, int maxDepth) {
     LightNode root = new LightNode {

@@ -201,7 +201,7 @@ public class Game : MonoBehaviour {
       if (quarterBeats % 4 == 0)
         BeatAudioSource.Play();
 
-      if (debugIndex < 0) {
+      if (debugIndex < 0 && !Board.Frozen) {
         foreach (PlayObject obj in Board.GetPlayObjects()) {
           obj.OnQuarterBeat(quarterBeats);
         }

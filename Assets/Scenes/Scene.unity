@@ -466,7 +466,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 581896879}
-  m_LocalRotation: {x: 0.44364712, y: -0.000000015420389, z: 0.000000007633561, w: 0.8962016}
+  m_LocalRotation: {x: 0.44364712, y: -0.000000015456825, z: 0.000000007651599, w: 0.8962016}
   m_LocalPosition: {x: 0, y: 12, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -1013,6 +1013,7 @@ MonoBehaviour:
   - {fileID: 1913581498766471175, guid: 8ad8244ce9950ce4f835432e61d87858, type: 3}
   - {fileID: 1913581498766471175, guid: 7211ed2ea921e9842a346589657e8e27, type: 3}
   - {fileID: 1913581498766471175, guid: 3c604b0c3ffa1a94088299009f5dfdfb, type: 3}
+  - {fileID: 1913581498766471175, guid: 4444f760787ba3b41b0d63d0be3bae4b, type: 3}
   SelectionIndicator: {fileID: 7343528108515389431}
   LineRenderers:
   - {fileID: 2044050096}
@@ -1699,7 +1700,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 5000
-  field of view: 40.5052
+  field of view: 40.545387
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -1724,7 +1725,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1739182545}
-  m_LocalRotation: {x: 0.44364712, y: -0.000000015420389, z: 0.000000007633561, w: 0.8962016}
+  m_LocalRotation: {x: 0.44364712, y: -0.000000015456825, z: 0.000000007651599, w: 0.8962016}
   m_LocalPosition: {x: 0, y: 12, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
