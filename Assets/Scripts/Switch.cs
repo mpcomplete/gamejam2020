@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public delegate void OnSwitchToggled(bool on);
@@ -9,6 +10,7 @@ public class Switch : LightStrikeableBase {
   public MeshRenderer Renderer = null;
   public Material EnabledMaterial = null;
   public Material DisabledMaterial = null;
+  public GameObject OnTriggerVanishTarget = null;
 
   private void OnEnable() {
     Renderer.material = On ? EnabledMaterial : DisabledMaterial;
@@ -27,6 +29,21 @@ public class Switch : LightStrikeableBase {
     On = on;
     Renderer.material = on ? EnabledMaterial : DisabledMaterial;
     OnToggled?.Invoke(on);
+
+    if (On && OnTriggerVanishTarget != null) {
+      StartCoroutine(VanishTarget());
+    }
   }
 
+  IEnumerator VanishTarget() {
+    const float duration = .5f;
+    float timer = 0f;
+    while (timer < duration) {
+      OnTriggerVanishTarget.transform.position += Vector3.down*Time.deltaTime/duration;
+      yield return null;
+      timer += Time.deltaTime;
+    }
+    Destroy(OnTriggerVanishTarget);
+    OnTriggerVanishTarget = null;
+  }
 }
