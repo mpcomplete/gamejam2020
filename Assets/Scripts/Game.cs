@@ -39,6 +39,7 @@ public class Game : MonoBehaviour {
   [SerializeField] float BeatPeriodInMS = 1000f;
   [SerializeField] float PauseOnVictoryDuration = 2f;
   [SerializeField] float TransformSinksDuration = 1f;
+  [SerializeField] float RotationalEpsilon = 1e-5f;
 
 
   int BoardIndex = 0;
@@ -169,6 +170,13 @@ public class Game : MonoBehaviour {
       foreach (LightStrikeableBase obj in Board.GetPlayObjects()) {
         obj.OnQuarterBeat(quarterBeats);
       }
+    }
+    foreach (LightStrikeableBase obj in Board.GetPlayObjects()) {
+      int orientation = obj.Orientation;
+      Quaternion targetRotation = Quaternion.Euler(obj.transform.eulerAngles.x, orientation * 360f / 16f, obj.transform.eulerAngles.z);
+      float t = 1.0f - Mathf.Pow(RotationalEpsilon, dt);
+
+      obj.transform.rotation = Quaternion.Slerp(obj.transform.rotation, targetRotation, t);
     }
   }
 

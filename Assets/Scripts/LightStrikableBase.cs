@@ -9,7 +9,6 @@ public abstract class LightStrikeableBase : MonoBehaviour {
     get => orientation;
     set {
       orientation = (value+16)%16;
-      transform.eulerAngles = new Vector3(transform.eulerAngles.x, orientation * 360f / 16f, transform.eulerAngles.z);
     }
   }
   public int Heading {
