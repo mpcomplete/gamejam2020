@@ -45,9 +45,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02e25253a9867ab46b7904dd8ff9beec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  orientation: 0
   Animator: {fileID: 3122239105711898786}
   Color: 7
-  Heading: 0
   DebugMode: 0
 --- !u!1001 &890635730002178132
 PrefabInstance:
@@ -185,6 +185,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3386163025130432924, guid: 9af60509b8d3e3541a44e068b732172d,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.7
       objectReference: {fileID: 0}
     - target: {fileID: 8082088198618991665, guid: 9af60509b8d3e3541a44e068b732172d,
         type: 3}

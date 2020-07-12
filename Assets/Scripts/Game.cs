@@ -79,7 +79,7 @@ public class Game : MonoBehaviour {
   void RenderLightNode(LightNode node) {
     const string EmissionColorName = "_EmissionColor";
 
-    Vector3 BeamOffset = new Vector3(0, .5f, 0);
+    Vector3 BeamOffset = new Vector3(0, .7f, 0);
 
     for (int i = 0; i < node.LightBeams.Count; i++) {
       LightBeam lb = node.LightBeams[i];
@@ -210,6 +210,7 @@ public class Game : MonoBehaviour {
     LightSource[] newSources = newBoard.GetSources();
     foreach (LightSource source in newSources) {
       source.transform.SetParent(null, true);
+      source.Animator.Play("Power Up", -1, 0);
     }
     yield return new WaitForSeconds(newBoard.PlayIntro());
     foreach (LightSource source in newSources) {
