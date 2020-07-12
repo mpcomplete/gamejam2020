@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class LightSource : LightStrikeableBase {
   public LightBeamColor Color = LightBeamColor.white;
-  public int Heading = 0;
   public bool DebugMode = false;
 
   public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {
@@ -25,5 +24,11 @@ public class LightSource : LightStrikeableBase {
   public override void OnQuarterBeat(int counter) {
     if (counter%4 == 0)
       Heading = (Heading+1) % 8;
+  }
+
+  public void OnDrawGizmos() {
+    Gizmos.color = UnityEngine.Color.green;
+    Vector2Int dir = Board.Vector2IntHeadings[Heading];
+    Gizmos.DrawRay(transform.position, new Vector3(dir[0], 0, dir[1]));
   }
 }
