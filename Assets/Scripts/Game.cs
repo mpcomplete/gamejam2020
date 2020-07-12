@@ -46,7 +46,7 @@ public class Game : MonoBehaviour {
 
   void Start() {
     SelectedMirror = Board.GetComponentInChildren<Mirror>();
-    DebugDumpLevel("Starting");
+    StartLevel();
   }
 
   [ContextMenu("Load Next Board")]
