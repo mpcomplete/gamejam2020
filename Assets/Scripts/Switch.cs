@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public delegate void OnSwitchToggled(bool on);
 
@@ -13,8 +14,13 @@ public class Switch : LightStrikeableBase {
     Renderer.material = On ? EnabledMaterial : DisabledMaterial;
   }
 
-  public override void OnCollide(LightBeam input) {
-    HandleSwitchToggled(true);
+  public override void OnCollide(List<LightBeam> input) {
+    if (!On)
+      HandleSwitchToggled(true);
+  }
+  public override void OnNoncollide() {
+    if (On)
+      HandleSwitchToggled(false);
   }
 
   void HandleSwitchToggled(bool on) {

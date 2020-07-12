@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class Game : MonoBehaviour {
   enum GameState { ActiveBoard, CompletedBoard, Ending }
@@ -133,7 +134,17 @@ public class Game : MonoBehaviour {
 
     // Update and draw the light beams
     {
-      RenderLightTree(Board.MarchLightTree(MAX_LIGHTBEAM_BOUNCES));
+      var noncollided = new HashSet<LightStrikeableBase>(Board.GetPlayObjects());
+      var collided = new Dictionary<LightStrikeableBase, List<LightBeam>>();
+
+      RenderLightTree(Board.MarchLightTree(collided, MAX_LIGHTBEAM_BOUNCES));
+
+      foreach (var kv in collided) {
+        noncollided.Remove(kv.Key);
+        kv.Key.OnCollide(kv.Value);
+      }
+      foreach (var obj in noncollided)
+        obj.OnNoncollide();
     }
 
     if (Board.LightSink.BeamStrikesThisFrame > 0) {
@@ -152,7 +163,7 @@ public class Game : MonoBehaviour {
       if (quarterBeats % 4 == 0)
         BeatAudioSource.Play();
 
-      foreach (LightStrikeableBase obj in Board.GetComponentsInChildren<LightStrikeableBase>()) {
+      foreach (LightStrikeableBase obj in Board.GetPlayObjects()) {
         obj.OnQuarterBeat(quarterBeats);
       }
     }
