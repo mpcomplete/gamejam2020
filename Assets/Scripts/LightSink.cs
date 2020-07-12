@@ -10,6 +10,13 @@ public class LightSink : PlayObject {
   }
 
   public override void OnCollide(List<LightBeam> lb) {
-    BeamStrikesThisFrame++;
+    BeamStrikesThisFrame = lb.Count;
+    Animator.Play("Lit", -1, 0f);
+    Animator.StopPlayback();
+  }
+
+  public override void OnNoncollide() {
+    BeamStrikesThisFrame = 0;
+    Animator.Play("Idle", -1, 0f);
   }
 }

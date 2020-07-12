@@ -77,8 +77,6 @@ public class Game : MonoBehaviour {
   }
 
   void RenderLightNode(LightNode node) {
-    const string EmissionColorName = "_EmissionColor";
-
     Vector3 BeamOffset = new Vector3(0, .7f, 0);
 
     for (int i = 0; i < node.LightBeams.Count; i++) {
@@ -92,10 +90,19 @@ public class Game : MonoBehaviour {
       lr.positionCount = 2;
       lr.SetPosition(0, origin);
       lr.SetPosition(1, destination);
-      // TODO: maybe cache materials per lb.Color.
-      lr.material.SetColor(EmissionColorName, lb.EmissionColor());
+      lr.material = GetBeamMaterial(lr, lb);
       RenderLightNode(ln);
     }
+  }
+
+  static Dictionary<LightBeamColor, Material> materialCache = new Dictionary<LightBeamColor, Material>();
+  Material GetBeamMaterial(LineRenderer renderer, LightBeam beam) {
+    if (materialCache.ContainsKey(beam.Color)) {
+      return materialCache[beam.Color];
+    }
+    renderer.material.SetColor("_EmissionColor", beam.EmissionColor());
+    materialCache[beam.Color] = renderer.material;
+    return materialCache[beam.Color];
   }
 
   void DisableUnusedLineRenderers() {
