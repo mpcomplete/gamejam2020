@@ -104,7 +104,7 @@ public class Game : MonoBehaviour {
   // Active Board State
   void UpdateActiveBoard(float dt) {
     // Debug stuff.
-    if (Input.GetKeyDown(KeyCode.N))
+    if (Input.GetKeyDown(KeyCode.Equals))
       LoadNextBoard();
 
     // Input handling
