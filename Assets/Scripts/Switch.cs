@@ -4,7 +4,7 @@ using UnityEngine;
 
 public delegate void OnSwitchToggled(bool on);
 
-public class Switch : LightStrikeableBase {
+public class Switch : PlayObject {
   public OnSwitchToggled OnToggled = null;
   public bool On = false;
   public MeshRenderer Renderer = null;

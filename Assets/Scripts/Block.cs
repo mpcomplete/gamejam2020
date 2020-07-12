@@ -1,2 +1,2 @@
-﻿public class Block : LightStrikeableBase {
+﻿public class Block : PlayObject {
 }

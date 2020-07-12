@@ -2,7 +2,7 @@
 using System.Linq;
 using UnityEngine;
 
-public class LightSource : LightStrikeableBase {
+public class LightSource : PlayObject {
   public Animator Animator;
   public LightBeamColor Color = LightBeamColor.white;
   public bool DebugMode = false;

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class Mirror : LightStrikeableBase {
+public class Mirror : PlayObject {
   public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {
     var result = new List<LightBeam>();
     // Reflection map for a mirror with orientation "0".

@@ -24,12 +24,12 @@ public class Board : MonoBehaviour {
   [SerializeField] PlayableAsset IntroPlayable = null;
   [SerializeField] PlayableAsset OutroPlayable = null;
 
-  public LightStrikeableBase SelectedObject;
+  public PlayObject SelectedObject;
   public Vector2Int Min = Vector2Int.zero;
   public Vector2Int Max = new Vector2Int(10, 10);
   public AudioClip Music;
 
-  public LightNode MarchLightTree(LightSource source, Dictionary<LightStrikeableBase, List<LightBeam>> collisions, int maxDepth) {
+  public LightNode MarchLightTree(LightSource source, Dictionary<PlayObject, List<LightBeam>> collisions, int maxDepth) {
     LightNode root = new LightNode {
       Object = source,
       Position = GetObjectCell(source.gameObject),
@@ -41,7 +41,7 @@ public class Board : MonoBehaviour {
     return root;
   }
 
-  public LightNode March(Vector2Int position, LightBeam beam, Dictionary<LightStrikeableBase, List<LightBeam>> collisions, int depth) {
+  public LightNode March(Vector2Int position, LightBeam beam, Dictionary<PlayObject, List<LightBeam>> collisions, int depth) {
     Vector2Int vHeading = Vector2IntHeadings[beam.Heading];
     Vector2Int nextCell = position + vHeading;
 
@@ -53,7 +53,7 @@ public class Board : MonoBehaviour {
       return new LightNode { Position = position + vHeading * 100 };
     }
 
-    LightStrikeableBase target = GetObjectAtCell(nextCell);
+    PlayObject target = GetObjectAtCell(nextCell);
     if (target) {
       LightNode targetNode = new LightNode { Object = target, Position = nextCell };
 
@@ -94,13 +94,13 @@ public class Board : MonoBehaviour {
 
   public bool IsVictory() => GetSinks().All(s => s.BeamStrikesThisFrame > 0);
 
-  public LightStrikeableBase[] GetPlayObjects() => GetComponentsInChildren<LightStrikeableBase>();
+  public PlayObject[] GetPlayObjects() => GetComponentsInChildren<PlayObject>();
   public LightSink[] GetSinks() => GetComponentsInChildren<LightSink>();
   public LightSource[] GetSources() => GetComponentsInChildren<LightSource>();
 
   // TODO: unity raycast may be better.
-  public LightStrikeableBase GetObjectAtCell(Vector2Int cell) {
-    foreach (LightStrikeableBase obj in GetPlayObjects()) {
+  public PlayObject GetObjectAtCell(Vector2Int cell) {
+    foreach (PlayObject obj in GetPlayObjects()) {
       if (GetObjectCell(obj.gameObject) == cell)
         return obj;
     }

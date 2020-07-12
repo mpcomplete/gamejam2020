@@ -104,8 +104,8 @@ public class Game : MonoBehaviour {
   }
 
   void MarchLightTrees() {
-    var noncollided = new HashSet<LightStrikeableBase>(Board.GetPlayObjects());
-    var collided = new Dictionary<LightStrikeableBase, List<LightBeam>>();
+    var noncollided = new HashSet<PlayObject>(Board.GetPlayObjects());
+    var collided = new Dictionary<PlayObject, List<LightBeam>>();
     foreach (LightSource source in Board.GetSources()) {
       RenderLightTree(Board.MarchLightTree(source, collided, MAX_LIGHTBEAM_BOUNCES));
     }
@@ -168,11 +168,11 @@ public class Game : MonoBehaviour {
       if (quarterBeats % 4 == 0)
         BeatAudioSource.Play();
 
-      foreach (LightStrikeableBase obj in Board.GetPlayObjects()) {
+      foreach (PlayObject obj in Board.GetPlayObjects()) {
         obj.OnQuarterBeat(quarterBeats);
       }
     }
-    foreach (LightStrikeableBase obj in Board.GetPlayObjects()) {
+    foreach (PlayObject obj in Board.GetPlayObjects()) {
       int orientation = obj.Orientation;
       Quaternion targetRotation = Quaternion.Euler(obj.transform.eulerAngles.x, orientation * 360f / 16f, obj.transform.eulerAngles.z);
       float t = 1.0f - Mathf.Pow(RotationalEpsilon, dt);

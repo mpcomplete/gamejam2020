@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class LightSink : LightStrikeableBase {
+public class LightSink : PlayObject {
   public Animator Animator;
   public int BeamStrikesThisFrame = 0;
 

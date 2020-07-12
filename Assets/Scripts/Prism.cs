@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class Prism : LightStrikeableBase {
+public class Prism : PlayObject {
   public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {
     var result = new List<LightBeam>();
     int[] headingAdjustMap = { 0, 1, 2, 3 };

@@ -4,7 +4,7 @@ using UnityEngine;
 
 [System.Serializable]
 public class LightNode {
-  public LightStrikeableBase Object;
+  public PlayObject Object;
   public Vector2Int Position;
   public List<LightBeam> LightBeams = new List<LightBeam>();
   public List<LightNode> LightNodes = new List<LightNode>();
