@@ -1,5 +1,7 @@
+﻿using System;
 ﻿﻿using System.Collections;
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Game : MonoBehaviour {
@@ -44,8 +46,35 @@ public class Game : MonoBehaviour {
 
   void Start() {
     SelectedMirror = Board.GetComponentInChildren<Mirror>();
+    DebugDumpLevel("Starting");
   }
 
+<<<<<<< HEAD
+=======
+  [ContextMenu("Load Next Board")]
+  public void LoadNextBoard() {
+    Destroy(Board.gameObject);
+    BoardIndex = (BoardIndex + 1) % Boards.Length;
+    Board = Instantiate(Boards[BoardIndex]);
+    StartLevel();
+  }
+  
+  void StartLevel() {
+    SelectedMirror = Board.GetComponentInChildren<Mirror>();
+    State = GameState.ActiveBoard;
+    MusicAudioSource.Stop();
+    beatTimer = Time.time;
+    quarterBeats = 0;
+    //SelectionIndicator.gameObject.SetActive(true);
+    DebugDumpLevel("Starting");
+  }
+
+  void DebugDumpLevel(string prefix) {
+    var tmp = String.Join(",", Board.GetComponentsInChildren<Mirror>().Select(m => m.Orientation.ToString()));
+    Debug.Log($"{prefix} level {BoardIndex} Source:{Board.LightSource.Heading}, mirrors:{tmp}");
+  }
+
+>>>>>>> 8f54041532efaae4368b37377cb05709f71eb224
   void RenderLightTree(LightNode tree) {
     RenderLightNode(tree);
   }
@@ -146,6 +175,7 @@ public class Game : MonoBehaviour {
   IEnumerator LevelCompletionSequence() {
     float victoryTimer = 0f;
 
+    DebugDumpLevel("Won");
     State = GameState.CompletedBoard;
     MusicAudioSource.clip = Board.WinningMusic;
     MusicAudioSource.Play();
@@ -197,12 +227,7 @@ public class Game : MonoBehaviour {
     // enter play mode
     Debug.Log("Entering play!");
     Board = newBoard;
-    SelectedMirror = Board.GetComponentInChildren<Mirror>();
-    MusicAudioSource.Stop();
-    beatTimer = 0;
-    quarterBeats = 0;
-    State = GameState.ActiveBoard;
-    SelectionIndicator.gameObject.SetActive(true);
+    StartLevel();
   }
 
   // Ending State;
@@ -214,22 +239,21 @@ public class Game : MonoBehaviour {
 
   }
 
-
   void Update() {
     float dt = Time.deltaTime;
 
     LineRendererIndex = 0;
     switch (State) {
     case GameState.ActiveBoard:
-    UpdateActiveBoard(dt);
-    break;
+      UpdateActiveBoard(dt);
+      break;
 
     case GameState.CompletedBoard:
-    break;
+      break;
 
     case GameState.Ending:
-    UpdateEnding(dt);
-    break;
+      UpdateEnding(dt);
+      break;
     }
     DisableUnusedLineRenderers();
   }
@@ -239,15 +263,15 @@ public class Game : MonoBehaviour {
 
     switch (State) {
     case GameState.ActiveBoard:
-    FixedUpdateActiveBoard(dt);
-    break;
+      FixedUpdateActiveBoard(dt);
+      break;
 
     case GameState.CompletedBoard:
-    break;
+      break;
 
     case GameState.Ending:
-    FixedUpdateEnding(dt);
-    break;
+      FixedUpdateEnding(dt);
+      break;
     }
   }
 }
