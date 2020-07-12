@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Playables;
 
 public class Board : MonoBehaviour {
   public static Vector2Int[] Vector2IntHeadings = new Vector2Int[8] {
@@ -16,6 +17,11 @@ public class Board : MonoBehaviour {
   public static Vector3 GridToWorldPosition(Vector2Int gp) {
     return new Vector3(gp.x, 0, gp.y);
   }
+
+  [Header("Animation")]
+  [SerializeField] PlayableDirector PlayableDirector = null;
+  [SerializeField] PlayableAsset IntroPlayable = null;
+  [SerializeField] PlayableAsset OutroPlayable = null;
 
   public LightSource LightSource;
   public LightSink LightSink;
@@ -65,6 +71,18 @@ public class Board : MonoBehaviour {
     }
   }
 
+  public float PlayIntro() {
+    PlayableDirector.playableAsset = IntroPlayable;
+    PlayableDirector.Play();
+    return (float)IntroPlayable.duration;
+  }
+
+  public float PlayOutro() {
+    PlayableDirector.playableAsset = OutroPlayable;
+    PlayableDirector.Play();
+    return (float)OutroPlayable.duration;
+  }
+
   public Vector2Int GetLightSourceCell() {
     return GetObjectCell(LightSource.gameObject);
   }
@@ -82,6 +100,8 @@ public class Board : MonoBehaviour {
   }
 
   public LightStrikeableBase[] GetPlayObjects() => GetComponentsInChildren<LightStrikeableBase>();
+  public LightSink[] GetSinks() => GetComponentsInChildren<LightSink>();
+  public LightSource[] GetSources() => GetComponentsInChildren<LightSource>();
 
   // TODO: unity raycast may be better.
   public LightStrikeableBase GetObjectAtCell(Vector2Int cell) {

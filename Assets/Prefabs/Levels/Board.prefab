@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 3989253272209235743}
   - component: {fileID: 5730713804920128683}
+  - component: {fileID: 1392978143585005126}
+  - component: {fileID: 7595609200164531716}
   m_Layer: 0
   m_Name: Board
   m_TagString: Untagged
@@ -43,8 +45,51 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c38c30ef21682aa4b9471f0b5b69e29c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PlayableDirector: {fileID: 7595609200164531716}
+  IntroPlayable: {fileID: 11400000, guid: b8bc40ce523408742a715b7280923e0b, type: 2}
+  OutroPlayable: {fileID: 11400000, guid: bdc2af41481e5144586e1a03b5af93c1, type: 2}
   LightSource: {fileID: 0}
   LightSink: {fileID: 0}
   Min: {x: 0, y: 0}
   Max: {x: 10, y: 10}
   WinningMusic: {fileID: 8300000, guid: 5d1659324f787ba4baf22fe45db8f142, type: 3}
+--- !u!95 &1392978143585005126
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4362960691810994742}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 0ddfb9b5470df354e8fec4f9173187af, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!320 &7595609200164531716
+PlayableDirector:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4362960691810994742}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_PlayableAsset: {fileID: 11400000, guid: b8bc40ce523408742a715b7280923e0b, type: 2}
+  m_InitialState: 0
+  m_WrapMode: 2
+  m_DirectorUpdateMode: 1
+  m_InitialTime: 0
+  m_SceneBindings:
+  - key: {fileID: 697368583352638414, guid: b8bc40ce523408742a715b7280923e0b, type: 2}
+    value: {fileID: 1392978143585005126}
+  - key: {fileID: 2309820846405578772, guid: bdc2af41481e5144586e1a03b5af93c1, type: 2}
+    value: {fileID: 1392978143585005126}
+  m_ExposedReferences:
+    m_References: []
