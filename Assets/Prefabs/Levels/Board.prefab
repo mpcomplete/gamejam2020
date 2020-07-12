@@ -50,9 +50,9 @@ MonoBehaviour:
   OutroPlayable: {fileID: 11400000, guid: bdc2af41481e5144586e1a03b5af93c1, type: 2}
   LightSource: {fileID: 0}
   LightSink: {fileID: 0}
-  Min: {x: 0, y: 0}
-  Max: {x: 10, y: 10}
-  WinningMusic: {fileID: 8300000, guid: 5d1659324f787ba4baf22fe45db8f142, type: 3}
+  Min: {x: -5, y: -5}
+  Max: {x: 5, y: 5}
+  Music: {fileID: 0}
 --- !u!95 &1392978143585005126
 Animator:
   serializedVersion: 3

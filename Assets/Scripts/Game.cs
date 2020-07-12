@@ -150,6 +150,12 @@ public class Game : MonoBehaviour {
     if (Input.GetKeyDown(KeyCode.Equals) || Board.LightSink.BeamStrikesThisFrame > 0) {
       StartCoroutine(LevelCompletionSequence());
     }
+    if (Input.GetKeyDown(KeyCode.Minus)) {
+      Destroy(Board.gameObject);
+      BoardIndex = (BoardIndex + 1) % Boards.Length;
+      Board newBoard = Instantiate(Boards[BoardIndex]);
+      StartLevel(newBoard);
+    }
   }
 
   void FixedUpdateActiveBoard(float dt) {
@@ -228,9 +234,6 @@ public class Game : MonoBehaviour {
 
     // transform Sinks to Emitters
     yield return new WaitForSeconds(TransformSinksDuration);
-
-    // Turn off music?
-    MusicAudioSource.Stop();
 
     // enter play mode
     StartLevel(newBoard);
