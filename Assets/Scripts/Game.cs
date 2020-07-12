@@ -117,6 +117,9 @@ public class Game : MonoBehaviour {
       obj.OnNoncollide();
   }
 
+  int debugIndex = -1;
+  PlayObject debugObject { get => debugIndex < 0 ? null : Board.GetPlayObjects()[debugIndex]; }
+
   // Active Board State
   void UpdateActiveBoard(float dt) {
     // Movement handling
@@ -151,11 +154,29 @@ public class Game : MonoBehaviour {
     if (Input.GetKeyDown(KeyCode.Equals) || Board.IsVictory()) {
       StartCoroutine(LevelCompletionSequence());
     }
+
+    // Debug stuff
     if (Input.GetKeyDown(KeyCode.Minus)) {
       Destroy(Board.gameObject);
       BoardIndex = (BoardIndex + 1) % Boards.Length;
       Board newBoard = Instantiate(Boards[BoardIndex]);
       StartLevel(newBoard);
+    }
+    if (Input.GetKeyDown(KeyCode.Tab)) {
+      if (Input.GetKey(KeyCode.LeftShift)) {
+        debugIndex = -1;
+      } else {
+        do {
+          debugIndex = (debugIndex + 1) % Board.GetPlayObjects().Length;
+        } while (!(debugObject.GetComponent<Mirror>() || debugObject.GetComponent<LightSource>() || debugObject.GetComponent<Splitter>()));
+        Debug.Log($"Selected {debugObject} at {debugObject.transform.position}");
+      }
+    }
+    if (Input.GetKeyDown(KeyCode.Comma) && debugIndex >= 0) {
+      debugObject.Orientation--;
+    }
+    if (Input.GetKeyDown(KeyCode.Period) && debugIndex >= 0) {
+      debugObject.Orientation++;
     }
   }
 
@@ -168,8 +189,10 @@ public class Game : MonoBehaviour {
       if (quarterBeats % 4 == 0)
         BeatAudioSource.Play();
 
-      foreach (PlayObject obj in Board.GetPlayObjects()) {
-        obj.OnQuarterBeat(quarterBeats);
+      if (debugIndex < 0) {
+        foreach (PlayObject obj in Board.GetPlayObjects()) {
+          obj.OnQuarterBeat(quarterBeats);
+        }
       }
     }
     foreach (PlayObject obj in Board.GetPlayObjects()) {
