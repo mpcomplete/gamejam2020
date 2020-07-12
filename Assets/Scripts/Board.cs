@@ -27,7 +27,7 @@ public class Board : MonoBehaviour {
   public LightSink LightSink;
   public Vector2Int Min = Vector2Int.zero;
   public Vector2Int Max = new Vector2Int(10, 10);
-  public AudioClip WinningMusic;
+  public AudioClip Music;
 
   public LightNode MarchLightTree(Dictionary<LightStrikeableBase, List<LightBeam>> collisions, int maxDepth) {
     LightNode rootNode = new LightNode { Object = LightSource, Position = GetLightSourceCell() };

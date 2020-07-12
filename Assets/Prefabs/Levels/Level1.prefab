@@ -485,6 +485,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Mirror
       objectReference: {fileID: 0}
+    - target: {fileID: 3673549099594476857, guid: 5fe5676d549990a429bbdbfa5d08a5ef,
+        type: 3}
+      propertyPath: m_Name
+      value: Mirror Mesh
+      objectReference: {fileID: 0}
     - target: {fileID: 8231112615763660663, guid: 5fe5676d549990a429bbdbfa5d08a5ef,
         type: 3}
       propertyPath: orientation

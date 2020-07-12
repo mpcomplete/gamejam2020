@@ -1,6 +1,6 @@
 ﻿using System;
-﻿﻿using System.Collections;
-﻿using System.Collections.Generic;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -25,6 +25,7 @@ public class Game : MonoBehaviour {
   [Header("Audio")]
   [SerializeField] AudioSource MusicAudioSource = null;
   [SerializeField] AudioSource BeatAudioSource = null;
+  [SerializeField] AudioClip WinningMusic = null;
 
   [Header("Boards")]
   [SerializeField] Board Board = null;
@@ -33,31 +34,30 @@ public class Game : MonoBehaviour {
   [Header("Scene Objects")]
   [SerializeField] SelectionIndicator SelectionIndicator = null;
   [SerializeField] LineRenderer[] LineRenderers = null;
-  int LineRendererIndex = 0;
 
   [Header("Gameplay")]
   [SerializeField] float BeatPeriodInMS = 1000f;
+  [SerializeField] float PauseOnVictoryDuration = 2f;
+  [SerializeField] float TransformSinksDuration = 1f;
+
 
   int BoardIndex = 0;
+  int LineRendererIndex = 0;
   GameState State = GameState.ActiveBoard;
   Mirror SelectedMirror = null;
   float beatTimer = 0f;
   int quarterBeats = 0;
 
   void Start() {
+    // TODO: This is a stupid hack but I am bad at thought
+    foreach (var source in Board.GetSources())
+      source.Animator.Play("Extend Arms", -1, 0);
     SelectedMirror = Board.GetComponentInChildren<Mirror>();
-    StartLevel();
+    StartLevel(Board);
   }
 
-  [ContextMenu("Load Next Board")]
-  public void LoadNextBoard() {
-    Destroy(Board.gameObject);
-    BoardIndex = (BoardIndex + 1) % Boards.Length;
-    Board = Instantiate(Boards[BoardIndex]);
-    StartLevel();
-  }
-  
-  void StartLevel() {
+  void StartLevel(Board board) {
+    Board = board;
     SelectedMirror = Board.GetComponentInChildren<Mirror>();
     State = GameState.ActiveBoard;
     MusicAudioSource.Stop();
@@ -106,11 +106,7 @@ public class Game : MonoBehaviour {
 
   // Active Board State
   void UpdateActiveBoard(float dt) {
-    // Debug stuff.
-    if (Input.GetKeyDown(KeyCode.Equals))
-      LoadNextBoard();
-
-    // Input handling
+    // Movement handling
     for (int i = 0; i < MovementDirections.Length; i++) {
       if (Input.GetKeyDown(MovementKeyCodes[i]) && SelectedMirror) {
         Vector2Int currentPosition = Board.GetObjectCell(SelectedMirror.gameObject);
@@ -150,7 +146,7 @@ public class Game : MonoBehaviour {
       RenderLightTree(lightTree);
     }
 
-    if (Board.LightSink.BeamStrikesThisFrame > 0) {
+    if (Input.GetKeyDown(KeyCode.Equals) || Board.LightSink.BeamStrikesThisFrame > 0) {
       StartCoroutine(LevelCompletionSequence());
     }
   }
@@ -170,15 +166,12 @@ public class Game : MonoBehaviour {
     }
   }
 
-  [SerializeField] float PauseOnVictoryDuration = 2f;
-  [SerializeField] float TransformSinksDuration = 1f;
-
   IEnumerator LevelCompletionSequence() {
     float victoryTimer = 0f;
 
     DebugDumpLevel("Won");
     State = GameState.CompletedBoard;
-    MusicAudioSource.clip = Board.WinningMusic;
+    MusicAudioSource.clip = WinningMusic;
     MusicAudioSource.Play();
     SelectionIndicator.gameObject.SetActive(false);
 
@@ -201,34 +194,38 @@ public class Game : MonoBehaviour {
     }
 
     // transition out the old board
-    Debug.Log("Old board going away sir!");
+    LightSink[] oldSinks = Board.GetSinks();
+    foreach (LightSink sink in oldSinks) {
+      sink.transform.SetParent(null, true);
+    }
     yield return new WaitForSeconds(Board.PlayOutro());
     Destroy(Board.gameObject);
+    foreach (LightSink sink in oldSinks) {
+      Destroy(sink.gameObject);
+    }
 
 
     // transition in the new board
-    Debug.Log("New board comin in sir!");
     BoardIndex = (BoardIndex + 1) % Boards.Length;
-
     Board newBoard = Instantiate(Boards[BoardIndex]);
-
+    LightSource[] newSources = newBoard.GetSources();
+    foreach (LightSource source in newSources) {
+      source.transform.SetParent(null, true);
+    }
     yield return new WaitForSeconds(newBoard.PlayIntro());
-
+    foreach (LightSource source in newSources) {
+      source.transform.SetParent(newBoard.transform, true);
+      source.Animator.Play("Extend Arms", -1, 0);
+    }
 
     // transform Sinks to Emitters
-    Debug.Log("Transform sinks to Emitters");
     yield return new WaitForSeconds(TransformSinksDuration);
 
-
-    // swap in new emitters
-    Debug.Log("Swapping in new Emitters");
-    // TODO: Destroy detached sinks from previous Board
-
+    // Turn off music?
+    MusicAudioSource.Stop();
 
     // enter play mode
-    Debug.Log("Entering play!");
-    Board = newBoard;
-    StartLevel();
+    StartLevel(newBoard);
   }
 
   // Ending State;
