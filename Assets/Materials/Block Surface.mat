@@ -9,8 +9,8 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: Block Surface
   m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
-  m_ShaderKeywords: 
-  m_LightmapFlags: 4
+  m_ShaderKeywords: _EMISSION
+  m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: 2050
@@ -91,9 +91,9 @@ Material:
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.24705882, g: 0.5176471, b: 0.46964985, a: 1}
+    - _BaseColor: {r: 0.09095763, g: 0.121884964, b: 0.26415092, a: 1}
     - _Color: {r: 0.24705882, g: 0.5176471, b: 0.46964985, a: 1}
-    - _EmissionColor: {r: 0.6603774, g: 0.5825027, b: 0.5825027, a: 1}
+    - _EmissionColor: {r: 0.030882353, g: 0.036764707, b: 0.064705886, a: 1}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
 --- !u!114 &8424957986060097654
 MonoBehaviour:

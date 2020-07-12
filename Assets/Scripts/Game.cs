@@ -36,6 +36,7 @@ public class Game : MonoBehaviour {
   [SerializeField] LineRenderer[] LineRenderers = null;
 
   [Header("Gameplay")]
+  [SerializeField] float BeamIntensity = 1f;
   [SerializeField] float BeatPeriod = 1f;
   [SerializeField] float PauseOnVictoryDuration = 2f;
   [SerializeField] float TransformSinksDuration = 1f;
@@ -95,14 +96,10 @@ public class Game : MonoBehaviour {
     }
   }
 
-  static Dictionary<LightBeamColor, Material> materialCache = new Dictionary<LightBeamColor, Material>();
   Material GetBeamMaterial(LineRenderer renderer, LightBeam beam) {
-    if (materialCache.ContainsKey(beam.Color)) {
-      return materialCache[beam.Color];
-    }
-    renderer.material.SetColor("_EmissionColor", beam.EmissionColor());
-    materialCache[beam.Color] = renderer.material;
-    return materialCache[beam.Color];
+    Color color = beam.EmissionColor() * BeamIntensity;
+    renderer.material.SetColor("_EmissionColor", color);
+    return renderer.material;
   }
 
   void DisableUnusedLineRenderers() {

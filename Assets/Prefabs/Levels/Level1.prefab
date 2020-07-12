@@ -581,5 +581,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tutorial Grid
       objectReference: {fileID: 0}
+    - target: {fileID: 4306614929433336601, guid: f78f4f8bc2204d8439720ad8c892aab0,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 921d5185dfb888e4ea39d1f180beac45, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f78f4f8bc2204d8439720ad8c892aab0, type: 3}
