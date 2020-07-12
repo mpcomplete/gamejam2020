@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Game : MonoBehaviour {
@@ -148,6 +150,8 @@ public class Game : MonoBehaviour {
     }
 
     if (Board.LightSink.BeamStrikesThisFrame > 0) {
+      var tmp = String.Join("; ", Board.GetComponentsInChildren<Mirror>().Select(m => m.Orientation.ToString()));
+      Debug.Log($"Won level with Source heading {Board.LightSource.Heading}, mirrors {tmp}");
       State = GameState.CompletedBoard;
       MusicAudioSource.clip = Board.WinningMusic;
       MusicAudioSource.Play();
