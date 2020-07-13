@@ -1003,7 +1003,6 @@ MonoBehaviour:
   MAX_LIGHTBEAM_BOUNCES: 6
   MusicAudioSource: {fileID: 1985256654}
   SFXAudioSource: {fileID: 901820483}
-  BeatAudioSource: {fileID: 458831317}
   VictoryAudioClip: {fileID: 8300000, guid: 401cd6869d0199f48893fb063c32a871, type: 3}
   MusicVolume: 0.05
   Board: {fileID: 358684634}
@@ -1499,7 +1498,32 @@ MonoBehaviour:
   - {fileID: 2044050098}
   - {fileID: 2044050097}
   BeamIntensity: 3.5
-  BeatPeriod: 1
+  MaximumBeamWidth: 0.1
+  BeamOffset: {x: 0, y: 0.7, z: 0}
+  BeamWidthForShotFractionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   PauseOnVictoryDuration: 2
   TransformSinksDuration: 1
   RotationalEpsilon: 0.00001

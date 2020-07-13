@@ -25,7 +25,6 @@ public class Game : MonoBehaviour {
   [Header("Audio")]
   [SerializeField] AudioSource MusicAudioSource = null;
   [SerializeField] AudioSource SFXAudioSource = null;
-  [SerializeField] AudioSource BeatAudioSource = null;
   [SerializeField] AudioClip VictoryAudioClip = null;
   [SerializeField] float MusicVolume = .2f;
 
@@ -39,11 +38,12 @@ public class Game : MonoBehaviour {
 
   [Header("Gameplay")]
   [SerializeField] float BeamIntensity = 1f;
-  [SerializeField] float BeatPeriod = 1f;
+  [SerializeField] float MaximumBeamWidth = .1f;
+  [SerializeField] Vector3 BeamOffset = new Vector3(0, .7f, 0);
+  [SerializeField] AnimationCurve BeamWidthForShotFractionCurve = AnimationCurve.Linear(0, 0, 1, 1);
   [SerializeField] float PauseOnVictoryDuration = 2f;
   [SerializeField] float TransformSinksDuration = 1f;
   [SerializeField] float RotationalEpsilon = 1e-5f;
-
 
   int BoardIndex = 0;
   int LineRendererIndex = 0;
@@ -67,7 +67,6 @@ public class Game : MonoBehaviour {
     MusicAudioSource.Play();
     beatTimer = Time.time;
     quarterBeats = 0;
-    //SelectionIndicator.gameObject.SetActive(true);
     DebugDumpLevel("Starting");
   }
 
@@ -78,11 +77,11 @@ public class Game : MonoBehaviour {
     Debug.Log($"{prefix} level {BoardIndex} Source:{tmp1}, mirrors:{tmp2}, splitters:{tmp3}");
   }
 
-  void RenderLightTree(LightNode tree) {
-    RenderLightNode(tree);
-  }
+  /*
+  All beams that are active should modulate width according to a curve evaluated at the fraction of the beat Time 
+  */
 
-  void RenderLightNode(LightNode node) {
+  void RenderLightNode(LightNode node, float width) {
     Vector3 BeamOffset = new Vector3(0, .7f, 0);
 
     for (int i = 0; i < node.LightBeams.Count; i++) {
@@ -96,8 +95,10 @@ public class Game : MonoBehaviour {
       lr.positionCount = 2;
       lr.SetPosition(0, origin);
       lr.SetPosition(1, destination);
+      lr.startWidth = width;
+      lr.endWidth = width;
       lr.material = GetBeamMaterial(lr, lb);
-      RenderLightNode(ln);
+      RenderLightNode(ln, width);
     }
   }
 
@@ -113,11 +114,13 @@ public class Game : MonoBehaviour {
     }
   }
 
-  void MarchLightTrees() {
+  void UpdateLightTrees(float shotFraction) {
     var noncollided = new HashSet<PlayObject>(Board.GetPlayObjects());
     var collided = new Dictionary<PlayObject, List<LightBeam>>();
+    var beamWidth = MaximumBeamWidth * BeamWidthForShotFractionCurve.Evaluate(shotFraction);
+
     foreach (LightSource source in Board.GetSources()) {
-      RenderLightTree(Board.MarchLightTree(source, collided, MAX_LIGHTBEAM_BOUNCES));
+      RenderLightNode(Board.MarchLightTree(source, collided, MAX_LIGHTBEAM_BOUNCES), shotFraction);
     }
     foreach (var kv in collided) {
       noncollided.Remove(kv.Key);
@@ -159,12 +162,18 @@ public class Game : MonoBehaviour {
       SelectionIndicator.gameObject.SetActive(false);
     }
 
-    // Update and draw the light beams
+    // Tick all light sinks
     foreach (LightSink sink in Board.GetSinks()) {
       sink.BeamStrikesThisFrame = 0;
     }
-    MarchLightTrees();
 
+    // Update the light trees
+    float shotFraction = (beatTimer - Time.time) / (Board.BeatPeriod);
+
+    Debug.Log(shotFraction);
+    UpdateLightTrees(shotFraction);
+
+    // Winning conditions
     if (Board.IsVictory()) {
       StartCoroutine(LevelCompletionSequence());
     }
@@ -206,8 +215,6 @@ public class Game : MonoBehaviour {
     while (beatTimer < Time.time) {
       beatTimer += quarterPeriod;
       quarterBeats++;
-      //if (quarterBeats % 4 == 0)
-      //  BeatAudioSource.Play();
 
       if (debugIndex < 0 && !Board.Frozen) {
         foreach (PlayObject obj in Board.GetPlayObjects()) {
@@ -235,7 +242,7 @@ public class Game : MonoBehaviour {
 
     // hold with lasers drawn and light emitting from sinks
     while (victoryTimer < PauseOnVictoryDuration) {
-      MarchLightTrees();
+      UpdateLightTrees(1f - victoryTimer / PauseOnVictoryDuration);
       MusicAudioSource.volume -= Time.deltaTime/PauseOnVictoryDuration*MusicVolume;
       yield return null;
       victoryTimer += Time.deltaTime;
