@@ -9,13 +9,11 @@ public class Switch : PlayObject {
   public BoolEvent OnToggled = null;
   public bool On = false;
 
-  [Header("Rendering")]
-  public MeshRenderer Renderer = null;
-  public Material EnabledMaterial = null;
-  public Material DisabledMaterial = null;
+  [SerializeField] string AnimatorStateParameterName = "On";
+  [SerializeField] Animator Animator = null;
 
   private void OnEnable() {
-    Renderer.material = On ? EnabledMaterial : DisabledMaterial;
+    Animator.SetBool(AnimatorStateParameterName, On);
   }
 
   public override void OnCollide(List<LightBeam> input) {
@@ -29,7 +27,7 @@ public class Switch : PlayObject {
 
   void HandleSwitchToggled(bool on) {
     On = on;
-    Renderer.material = on ? EnabledMaterial : DisabledMaterial;
+    Animator.SetBool(AnimatorStateParameterName, On);
     OnToggled?.Invoke(on);
   }
 }
