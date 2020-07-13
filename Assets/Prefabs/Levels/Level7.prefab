@@ -3550,7 +3550,7 @@ PrefabInstance:
     - target: {fileID: 5730713804920128683, guid: 4a3babbd2638dab449c756215956fb47,
         type: 3}
       propertyPath: BeatPeriod
-      value: 0.666667
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 5730713804920128683, guid: 4a3babbd2638dab449c756215956fb47,
         type: 3}
