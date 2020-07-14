@@ -160,10 +160,9 @@ public class Game : MonoBehaviour {
     }
 
     // Update the light trees
-    // float shotFraction = 1 - (Board.Metronome.TimeTillNextBeat / Board.Metronome.BeatPeriod);
-    float shotFraction = 1;
+    float shotFraction = 1 - (Board.Metronome.TimeTillNextBeat / Board.Metronome.BeatPeriod);
 
-    // Debug.Log(shotFraction);
+    Debug.Log(shotFraction);
     UpdateLightTrees(shotFraction);
 
     // Winning conditions
@@ -205,7 +204,7 @@ public class Game : MonoBehaviour {
   void FixedUpdateActiveBoard(float dt) {
     if (Board.Metronome.Tick(dt)) {
       foreach (var playObject in Board.GetPlayObjects()) {
-        playObject.OnQuarterBeat(Board.Metronome.Beats);
+        playObject.OnQuarterBeat(Board.Metronome.QuarterBeats);
       }
     }
 

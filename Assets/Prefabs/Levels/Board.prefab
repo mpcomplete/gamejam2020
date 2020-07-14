@@ -56,7 +56,9 @@ MonoBehaviour:
   Metronome:
     Beats: 0
     TimeTillNextBeat: 0
-    BeatPeriod: 0.125
+    BeatPeriod: 0.5
+    QuarterBeats: 0
+    TimeTillNextQuarterBeat: 0
   Frozen: 0
 --- !u!95 &1392978143585005126
 Animator:

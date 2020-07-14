@@ -5,9 +5,13 @@ public class Metronome
     public float TimeTillNextBeat = 0;
     public float BeatPeriod = .5f;
 
+    public int QuarterBeats = 0;
+    public float TimeTillNextQuarterBeat = 0;
+
     public bool Tick(float dt) {
         const int MAX_CYCLES = 1000; // to prevent annoying infinite loops
 
+        float quarterBeatPeriod = BeatPeriod / 4f;
         int cycles = 0;
         bool ticked = false;
 
@@ -15,14 +19,19 @@ public class Metronome
             return false;
         }
 
-        while (dt > TimeTillNextBeat && cycles < MAX_CYCLES) {
+        while (dt > TimeTillNextQuarterBeat && cycles < MAX_CYCLES) {
             ticked = true;
-            Beats++;
+            QuarterBeats++;
             cycles++;
-            dt -= TimeTillNextBeat;
-            TimeTillNextBeat = BeatPeriod;
+            dt -= TimeTillNextQuarterBeat;
+            TimeTillNextQuarterBeat = quarterBeatPeriod;
+            if (QuarterBeats % 4 == 0) {
+                Beats++;
+                TimeTillNextBeat = BeatPeriod;
+            }
         }
         TimeTillNextBeat -= dt;
+        TimeTillNextQuarterBeat -= dt;
         return ticked;
     }
 }
