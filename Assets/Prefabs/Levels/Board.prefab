@@ -48,11 +48,16 @@ MonoBehaviour:
   PlayableDirector: {fileID: 7595609200164531716}
   IntroPlayable: {fileID: 11400000, guid: b8bc40ce523408742a715b7280923e0b, type: 2}
   OutroPlayable: {fileID: 11400000, guid: bdc2af41481e5144586e1a03b5af93c1, type: 2}
-  LightSource: {fileID: 0}
-  LightSink: {fileID: 0}
+  BeatPeriod: 1
+  SelectedObject: {fileID: 0}
   Min: {x: -5, y: -5}
   Max: {x: 5, y: 5}
   Music: {fileID: 0}
+  Metronome:
+    Beats: 0
+    TimeTillNextBeat: 0
+    BeatPeriod: 0.125
+  Frozen: 0
 --- !u!95 &1392978143585005126
 Animator:
   serializedVersion: 3

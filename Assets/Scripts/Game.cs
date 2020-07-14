@@ -48,8 +48,6 @@ public class Game : MonoBehaviour {
   int BoardIndex = 0;
   int LineRendererIndex = 0;
   GameState State = GameState.ActiveBoard;
-  float beatTimer = 0f;
-  int quarterBeats = 0;
 
   void Start() {
     // TODO: This is a stupid hack but I am bad at thought
@@ -65,8 +63,6 @@ public class Game : MonoBehaviour {
     MusicAudioSource.clip = Board.Music;
     MusicAudioSource.volume = MusicVolume;
     MusicAudioSource.Play();
-    beatTimer = Time.time;
-    quarterBeats = 0;
     DebugDumpLevel("Starting");
   }
 
@@ -76,10 +72,6 @@ public class Game : MonoBehaviour {
     var tmp3 = String.Join(",", Board.GetComponentsInChildren<Splitter>().Select(o => o.Orientation.ToString()));
     Debug.Log($"{prefix} level {BoardIndex} Source:{tmp1}, mirrors:{tmp2}, splitters:{tmp3}");
   }
-
-  /*
-  All beams that are active should modulate width according to a curve evaluated at the fraction of the beat Time 
-  */
 
   void RenderLightNode(LightNode node, float width) {
     Vector3 BeamOffset = new Vector3(0, .7f, 0);
@@ -120,7 +112,7 @@ public class Game : MonoBehaviour {
     var beamWidth = MaximumBeamWidth * BeamWidthForShotFractionCurve.Evaluate(shotFraction);
 
     foreach (LightSource source in Board.GetSources()) {
-      RenderLightNode(Board.MarchLightTree(source, collided, MAX_LIGHTBEAM_BOUNCES), shotFraction);
+      RenderLightNode(Board.MarchLightTree(source, collided, MAX_LIGHTBEAM_BOUNCES), beamWidth);
     }
     foreach (var kv in collided) {
       noncollided.Remove(kv.Key);
@@ -168,9 +160,10 @@ public class Game : MonoBehaviour {
     }
 
     // Update the light trees
-    float shotFraction = (beatTimer - Time.time) / (Board.BeatPeriod);
+    // float shotFraction = 1 - (Board.Metronome.TimeTillNextBeat / Board.Metronome.BeatPeriod);
+    float shotFraction = 1;
 
-    Debug.Log(shotFraction);
+    // Debug.Log(shotFraction);
     UpdateLightTrees(shotFraction);
 
     // Winning conditions
@@ -210,18 +203,13 @@ public class Game : MonoBehaviour {
   }
 
   void FixedUpdateActiveBoard(float dt) {
-    float quarterPeriod = Board.BeatPeriod / 4f;
-
-    while (beatTimer < Time.time) {
-      beatTimer += quarterPeriod;
-      quarterBeats++;
-
-      if (debugIndex < 0 && !Board.Frozen) {
-        foreach (PlayObject obj in Board.GetPlayObjects()) {
-          obj.OnQuarterBeat(quarterBeats);
-        }
+    if (Board.Metronome.Tick(dt)) {
+      foreach (var playObject in Board.GetPlayObjects()) {
+        playObject.OnQuarterBeat(Board.Metronome.Beats);
       }
     }
+
+    // Smoothly animate the transforms of all play objects based on orientation
     foreach (PlayObject obj in Board.GetPlayObjects()) {
       int orientation = obj.Orientation;
       Quaternion targetRotation = Quaternion.Euler(obj.transform.eulerAngles.x, orientation * 360f / 16f, obj.transform.eulerAngles.z);
