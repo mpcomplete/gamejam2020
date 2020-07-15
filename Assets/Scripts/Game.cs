@@ -49,7 +49,8 @@ public class Game : MonoBehaviour {
   int LineRendererIndex = 0;
   GameState State = GameState.ActiveBoard;
 
-  void Start() {
+  IEnumerator Start() {
+    yield return new WaitForSeconds(4);
     // TODO: This is a stupid hack but I am bad at thought
     foreach (var source in Board.GetSources())
       source.Animator.Play("Extend Arms", -1, 0);
@@ -159,11 +160,20 @@ public class Game : MonoBehaviour {
       sink.BeamStrikesThisFrame = 0;
     }
 
+    foreach (Star star in Board.GetComponentsInChildren<Star>()) {
+      star.BeamStrikesThisFrame = 0;
+    }
+
     // Update the light trees
     float shotFraction = 1 - (Board.Metronome.TimeTillNextBeat / Board.Metronome.BeatPeriod);
 
-    Debug.Log(shotFraction);
     UpdateLightTrees(shotFraction);
+
+    foreach (Star star in Board.GetComponentsInChildren<Star>()) {
+      if (star.BeamStrikesThisFrame > 0) {
+        star.CurrentState = Star.State.Source;
+      }
+    }
 
     // Winning conditions
     if (Board.IsVictory()) {
