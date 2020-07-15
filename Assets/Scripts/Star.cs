@@ -5,8 +5,9 @@ public class Star : PlayObject {
     public enum State { Dormant = 0, GoStar, Star, GoSource, Source, GoDormant }
     public int BeamStrikesThisFrame = 0;
 
-    [SerializeField] Animator Animator;
+    [SerializeField] Animator Animator = null;
     [SerializeField] string AnimatorStateName = "State";
+    [SerializeField] string AnimatorHitName = "Beam Strike";
     public State CurrentState = State.Dormant;
     public AudioSource IgniteSource;
     public AudioSource ExplosionSource;
@@ -16,10 +17,12 @@ public class Star : PlayObject {
     }
 
     public override void OnCollide(List<LightBeam> input) {
+        Animator.SetBool(AnimatorHitName, true);
         BeamStrikesThisFrame += input.Count;
     }
 
     public override void OnNoncollide() {
+        Animator.SetBool(AnimatorHitName, false);
         BeamStrikesThisFrame = 0;
     }
 

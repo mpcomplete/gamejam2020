@@ -49,8 +49,7 @@ public class Game : MonoBehaviour {
   int LineRendererIndex = 0;
   GameState State = GameState.ActiveBoard;
 
-  IEnumerator Start() {
-    yield return new WaitForSeconds(4);
+  void Start() {
     // TODO: This is a stupid hack but I am bad at thought
     foreach (var source in Board.GetSources())
       source.Animator.Play("Extend Arms", -1, 0);
@@ -171,7 +170,7 @@ public class Game : MonoBehaviour {
 
     foreach (Star star in Board.GetComponentsInChildren<Star>()) {
       if (star.BeamStrikesThisFrame > 0) {
-        star.CurrentState = Star.State.Source;
+        // star.CurrentState = Star.State.Source;
       }
     }
 
