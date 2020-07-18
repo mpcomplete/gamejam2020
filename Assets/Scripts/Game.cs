@@ -19,7 +19,7 @@ public class Game : MonoBehaviour {
     Vector2Int.left
   };
 
-  enum GameState { ActiveBoard, CompletedBoard, Ending }
+  enum GameState { Intro, ActiveBoard, CompletedBoard, Ending }
 
   [SerializeField] int MAX_LIGHTBEAM_BOUNCES = 6;
   [Header("Audio")]
@@ -31,39 +31,97 @@ public class Game : MonoBehaviour {
   [Header("Boards")]
   [SerializeField] Board Board = null;
   [SerializeField] Board[] Boards = null;
+  [SerializeField] int BoardIndex = 0;
 
   [Header("Scene Objects")]
   [SerializeField] SelectionIndicator SelectionIndicator = null;
   [SerializeField] LineRenderer[] LineRenderers = null;
+  [SerializeField] SpaceField SpaceField = null;
 
   [Header("Gameplay")]
   [SerializeField] float BeamIntensity = 1f;
   [SerializeField] float MaximumBeamWidth = .1f;
-  [SerializeField] Vector3 BeamOffset = new Vector3(0, .7f, 0);
   [SerializeField] AnimationCurve BeamWidthForShotFractionCurve = AnimationCurve.Linear(0, 0, 1, 1);
-  [SerializeField] float PauseOnVictoryDuration = 2f;
-  [SerializeField] float TransformSinksDuration = 1f;
+  [SerializeField] float VictoryDuration = 2f;
+  [SerializeField] float StartLevelDuration = 1f;
   [SerializeField] float RotationalEpsilon = 1e-5f;
+  [SerializeField] float TranslationEpsilon = 1e-5f;
+  
+  [Header("Camera")]
+  [SerializeField] Camera Camera = null;
+  [SerializeField] float CameraHeight = 60f;
 
-  int BoardIndex = 0;
   int LineRendererIndex = 0;
-  GameState State = GameState.ActiveBoard;
+  GameState State = GameState.Intro;
 
-  void Start() {
-    // TODO: This is a stupid hack but I am bad at thought
-    foreach (var source in Board.GetSources())
-      source.Animator.Play("Extend Arms", -1, 0);
-    StartLevel(Board);
+  IEnumerator Start() {
+    foreach (var board in Boards) {
+      board.gameObject.SetActive(false);
+    }
+    yield return StartLevel(Boards[BoardIndex]);
   }
 
-  void StartLevel(Board board) {
+  Vector3 ExponentialLerpTo(Vector3 a, Vector3 b, float epsilon, float dt) {
+    return Vector3.Lerp(a, b, 1 - Mathf.Pow(epsilon, dt));
+  }
+
+  Quaternion ExponentialSlerpTo(Quaternion a, Quaternion b, float epsilon, float dt) {
+    return Quaternion.Slerp(a, b, 1 - Mathf.Pow(epsilon, dt));
+  }
+
+  IEnumerator StartLevel(Board board) {
+    // TODO: Could fade away with animator state?
+    // Disable Selection Indicator
+    SelectionIndicator.gameObject.SetActive(false);
+
+    // TODO: Could play outro animation?
+    // Swap the active boards
+    Board?.gameObject.SetActive(false);
     Board = board;
-    State = GameState.ActiveBoard;
+
+    // TODO: Could be a cross fade?
+    // Turn off old music
     MusicAudioSource.Stop();
+
+    Vector2Int center = Board.Min + (Board.Max - Board.Min) / 2;
+    Vector3 targetCenter = Board.GridToWorldPosition(center);
+    Vector3 targetCamera = Board.GridToWorldPosition(center) + new Vector3(0, CameraHeight, -CameraHeight);
+    Vector3 currentCenter = SpaceField.transform.position;
+    Vector3 currentCamera = Camera.transform.position;
+
+    float startTimer = StartLevelDuration;
+    bool timeElapsed = false;
+    while (!timeElapsed) {
+      yield return null;
+      float dt = Mathf.Min(startTimer, Time.deltaTime);
+
+      currentCenter = ExponentialLerpTo(currentCenter, targetCenter, TranslationEpsilon, dt);
+      currentCamera = ExponentialLerpTo(currentCamera, targetCamera, TranslationEpsilon, dt);
+      SpaceField.transform.position = currentCenter;
+      Camera.transform.position = currentCamera;
+      startTimer -= dt;
+      timeElapsed = Mathf.Approximately(startTimer, 0);
+    }
+    SpaceField.transform.position = targetCenter;
+    Camera.transform.position = targetCamera;
+
+    // TODO: Could play intro animation?
+    // Activate the new Board
+    Board.gameObject.SetActive(true);
+
+    // TODO: Could fade in with animator state?
+    // Enable Selection Indicator
+    SelectionIndicator.gameObject.SetActive(false);
+
+    // TODO: Could be a cross fade?
+    // Turn on new music
     MusicAudioSource.clip = Board.Music;
     MusicAudioSource.volume = MusicVolume;
     MusicAudioSource.Play();
-    DebugDumpLevel("Starting");
+
+    // Set the gamestate to active
+    State = GameState.ActiveBoard;
+    yield return null;
   }
 
   void DebugDumpLevel(string prefix) {
@@ -74,14 +132,12 @@ public class Game : MonoBehaviour {
   }
 
   void RenderLightNode(LightNode node, float width) {
-    Vector3 BeamOffset = new Vector3(0, .7f, 0);
-
     for (int i = 0; i < node.LightBeams.Count; i++) {
       LightBeam lb = node.LightBeams[i];
       LightNode ln = node.LightNodes[i];
       LineRenderer lr = LineRenderers[LineRendererIndex++];
-      Vector3 origin = BeamOffset + Board.GridToWorldPosition(node.Position);
-      Vector3 destination = BeamOffset + Board.GridToWorldPosition(ln.Position);
+      Vector3 origin = Board.GridToWorldPosition(node.Position);
+      Vector3 destination = Board.GridToWorldPosition(ln.Position);
 
       lr.gameObject.SetActive(true);
       lr.positionCount = 2;
@@ -104,22 +160,6 @@ public class Game : MonoBehaviour {
     for (int i = LineRendererIndex; i < LineRenderers.Length; i++) {
       LineRenderers[i].gameObject.SetActive(false);
     }
-  }
-
-  void UpdateLightTrees(float shotFraction) {
-    var noncollided = new HashSet<PlayObject>(Board.GetPlayObjects());
-    var collided = new Dictionary<PlayObject, List<LightBeam>>();
-    var beamWidth = MaximumBeamWidth * BeamWidthForShotFractionCurve.Evaluate(shotFraction);
-
-    foreach (LightSource source in Board.GetSources()) {
-      RenderLightNode(Board.MarchLightTree(source, collided, MAX_LIGHTBEAM_BOUNCES), beamWidth);
-    }
-    foreach (var kv in collided) {
-      noncollided.Remove(kv.Key);
-      kv.Key.OnCollide(kv.Value);
-    }
-    foreach (var obj in noncollided)
-      obj.OnNoncollide();
   }
 
   [SerializeField] bool DebugMode = false;
@@ -155,23 +195,36 @@ public class Game : MonoBehaviour {
     }
 
     // Tick all light sinks
-    foreach (LightSink sink in Board.GetSinks()) {
+    foreach (LightSink sink in Board.LightSinks) {
       sink.BeamStrikesThisFrame = 0;
     }
 
-    foreach (Star star in Board.GetComponentsInChildren<Star>()) {
-      star.BeamStrikesThisFrame = 0;
+    // Update light trees and send collision notifications
+    {
+      float shotFraction = 1 - (Board.Metronome.TimeTillNextBeat / Board.Metronome.BeatPeriod);
+      float beamWidth = MaximumBeamWidth * BeamWidthForShotFractionCurve.Evaluate(shotFraction);
+      var noncollided = new HashSet<PlayObject>(Board.GetPlayObjects());
+      var collided = new Dictionary<PlayObject, List<LightBeam>>();
+
+      foreach (LightSource source in Board.LightSources) {
+        RenderLightNode(Board.MarchLightTree(source, collided, MAX_LIGHTBEAM_BOUNCES), beamWidth);
+      }
+      foreach (var kv in collided) {
+        noncollided.Remove(kv.Key);
+        kv.Key.OnCollide(kv.Value);
+      }
+      foreach (var obj in noncollided)
+        obj.OnNoncollide();
     }
 
-    // Update the light trees
-    float shotFraction = 1 - (Board.Metronome.TimeTillNextBeat / Board.Metronome.BeatPeriod);
+    // Update the spacefield
+    {
+      Star sourceStar = Board.LightSources[0].Star;
+      Star sinkStar = Board.LightSinks[0].Star;
+      Vector3[] positions = new Vector3[2] { sourceStar.transform.position, sinkStar.transform.position };
+      float[] weights = new float[2] { sourceStar.NormalizedMass, sinkStar.NormalizedMass };
 
-    UpdateLightTrees(shotFraction);
-
-    foreach (Star star in Board.GetComponentsInChildren<Star>()) {
-      if (star.BeamStrikesThisFrame > 0) {
-        // star.CurrentState = Star.State.Source;
-      }
+      SpaceField.Render(positions, weights);
     }
 
     // Winning conditions
@@ -220,10 +273,10 @@ public class Game : MonoBehaviour {
     // Smoothly animate the transforms of all play objects based on orientation
     foreach (PlayObject obj in Board.GetPlayObjects()) {
       int orientation = obj.Orientation;
-      Quaternion targetRotation = Quaternion.Euler(obj.transform.eulerAngles.x, orientation * 360f / 16f, obj.transform.eulerAngles.z);
-      float t = 1.0f - Mathf.Pow(RotationalEpsilon, dt);
+      Vector3 eulerAngles = obj.transform.eulerAngles;
+      Quaternion targetRotation = Quaternion.Euler(eulerAngles.x, orientation * 360f / 16f, eulerAngles.z);
 
-      obj.transform.rotation = Quaternion.Slerp(obj.transform.rotation, targetRotation, t);
+      obj.transform.rotation = ExponentialSlerpTo(obj.transform.rotation, targetRotation, RotationalEpsilon, dt);
     }
   }
 
@@ -237,49 +290,43 @@ public class Game : MonoBehaviour {
     SelectionIndicator.gameObject.SetActive(false);
 
     // hold with lasers drawn and light emitting from sinks
-    while (victoryTimer < PauseOnVictoryDuration) {
-      UpdateLightTrees(1f - victoryTimer / PauseOnVictoryDuration);
-      MusicAudioSource.volume -= Time.deltaTime/PauseOnVictoryDuration*MusicVolume;
+    foreach (var sink in Board.LightSinks) {
+      sink.Star.Ignite();
+    }
+    while (victoryTimer < VictoryDuration) {
+      float shotFraction = 1 - (victoryTimer / VictoryDuration);
+      float beamWidth = MaximumBeamWidth * BeamWidthForShotFractionCurve.Evaluate(shotFraction);
+      var noncollided = new HashSet<PlayObject>(Board.GetPlayObjects());
+      var collided = new Dictionary<PlayObject, List<LightBeam>>();
+
+      foreach (LightSource source in Board.LightSources) {
+        RenderLightNode(Board.MarchLightTree(source, collided, MAX_LIGHTBEAM_BOUNCES), beamWidth);
+      }
+      foreach (var kv in collided) {
+        noncollided.Remove(kv.Key);
+        kv.Key.OnCollide(kv.Value);
+      }
+      foreach (var obj in noncollided)
+        obj.OnNoncollide();
+
+      MusicAudioSource.volume = Mathf.Lerp(MusicVolume, 0, victoryTimer);
       yield return null;
       victoryTimer += Time.deltaTime;
     }
+
     MusicAudioSource.Stop();
 
-    // transition out the old board
-    LightSink[] oldSinks = Board.GetSinks();
-    foreach (LightSink sink in oldSinks) {
-      sink.transform.SetParent(null, true);
+    BoardIndex++;
+    if (BoardIndex < Boards.Length) {
+      yield return StartLevel(Boards[BoardIndex]);
+    } else {
+      State = GameState.Ending;
     }
-    yield return new WaitForSeconds(Board.PlayOutro());
-    Destroy(Board.gameObject);
-    foreach (LightSink sink in oldSinks) {
-      Destroy(sink.gameObject);
-    }
-
-    // transition in the new board
-    BoardIndex = (BoardIndex + 1) % Boards.Length;
-    Board newBoard = Instantiate(Boards[BoardIndex]);
-    LightSource[] newSources = newBoard.GetSources();
-    foreach (LightSource source in newSources) {
-      source.transform.SetParent(null, true);
-      source.Animator.Play("Power Up", -1, 0);
-    }
-    yield return new WaitForSeconds(newBoard.PlayIntro());
-    foreach (LightSource source in newSources) {
-      source.transform.SetParent(newBoard.transform, true);
-      source.Animator.Play("Extend Arms", -1, 0);
-    }
-
-    // transform Sinks to Emitters
-    yield return new WaitForSeconds(TransformSinksDuration);
-
-    // enter play mode
-    StartLevel(newBoard);
   }
 
   // Ending State;
   void UpdateEnding(float dt) {
-
+    Debug.Log("It's ovah");
   }
 
   void FixedUpdateEnding(float dt) {
@@ -291,6 +338,9 @@ public class Game : MonoBehaviour {
 
     LineRendererIndex = 0;
     switch (State) {
+    case GameState.Intro:
+      break;
+      
     case GameState.ActiveBoard:
       UpdateActiveBoard(dt);
       break;
@@ -302,6 +352,25 @@ public class Game : MonoBehaviour {
       UpdateEnding(dt);
       break;
     }
+
+    // TODO: Maybe it's more sane to just... do this by iterating all the stars in the level?
+    // Update the spacefield
+    if (Board) {
+      Vector3[] positions = new Vector3[4];
+      float[] normalizedMasses = new float[4];
+      int i = 0;
+      foreach (var source in Board.LightSources) {
+        positions[i] = source.Star.transform.position;
+        normalizedMasses[i] = source.Star.NormalizedMass;
+        i++;
+      }
+      foreach (var sink in Board.LightSinks) {
+        positions[i] = sink.Star.transform.position;
+        normalizedMasses[i] = sink.Star.NormalizedMass;
+        i++;
+      }
+      SpaceField.Render(positions, normalizedMasses);
+    }
     DisableUnusedLineRenderers();
   }
 
@@ -309,6 +378,9 @@ public class Game : MonoBehaviour {
     float dt = Time.fixedDeltaTime;
 
     switch (State) {
+    case GameState.Intro:
+      break;
+
     case GameState.ActiveBoard:
       FixedUpdateActiveBoard(dt);
       break;

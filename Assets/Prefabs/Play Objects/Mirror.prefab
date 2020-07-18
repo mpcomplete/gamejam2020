@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1823461677229875913}
   - component: {fileID: 8231112615763660663}
+  - component: {fileID: 5702362525562737330}
   m_Layer: 0
   m_Name: Mirror
   m_TagString: Untagged
@@ -24,7 +25,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1823461677229875917}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: 0.38268346, z: 0, w: 0.9238795}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -45,7 +46,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6277d443f0859244cb3ef9e5a254514a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  orientation: 0
+  orientation: 2
+  AnimatorStateParameterName: On
+  Animator: {fileID: 5702362525562737330}
+--- !u!95 &5702362525562737330
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1823461677229875917}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: e924eae73b4c0d34fbd07e09b93b4d8c, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &3673549099594476857
 GameObject:
   m_ObjectHideFlags: 0
@@ -57,9 +79,8 @@ GameObject:
   - component: {fileID: 8110152846479812211}
   - component: {fileID: 763223290988431044}
   - component: {fileID: 1105128409994065160}
-  - component: {fileID: 3665417509395759348}
   m_Layer: 0
-  m_Name: Mirro Mesh
+  m_Name: Mirror Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -74,7 +95,7 @@ Transform:
   m_GameObject: {fileID: 3673549099594476857}
   m_LocalRotation: {x: 0.5, y: 0.5, z: 0.5, w: 0.5}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.9, y: 0.1, z: 0.9}
+  m_LocalScale: {x: 0.6, y: 0.1, z: 0.6}
   m_Children: []
   m_Father: {fileID: 1823461677229875913}
   m_RootOrder: 1
@@ -126,20 +147,6 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!136 &3665417509395759348
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3673549099594476857}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.5000001
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!1 &5400833723048934214
 GameObject:
   m_ObjectHideFlags: 0
@@ -151,7 +158,6 @@ GameObject:
   - component: {fileID: 357402094126891367}
   - component: {fileID: 5197947677944336790}
   - component: {fileID: 2402256988856243316}
-  - component: {fileID: 3570031230382364475}
   m_Layer: 0
   m_Name: Mirror Bezel
   m_TagString: Untagged
@@ -168,7 +174,7 @@ Transform:
   m_GameObject: {fileID: 5400833723048934214}
   m_LocalRotation: {x: 0.5, y: 0.5, z: 0.5, w: 0.5}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 0.05, z: 1}
+  m_LocalScale: {x: 0.7, y: 0.05, z: 0.7}
   m_Children: []
   m_Father: {fileID: 1823461677229875913}
   m_RootOrder: 0
@@ -220,17 +226,3 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!136 &3570031230382364475
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5400833723048934214}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.5000001
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}

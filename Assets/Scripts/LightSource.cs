@@ -3,8 +3,7 @@ using System.Linq;
 using UnityEngine;
 
 public class LightSource : PlayObject {
-  public Animator Animator;
-  public LightBeamColor Color = LightBeamColor.white;
+  public Star Star;
   public bool DebugMode = false;
 
   public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {
@@ -17,14 +16,18 @@ public class LightSource : PlayObject {
           Heading = i
         }).ToList();
       }
-      result.Add(new LightBeam { Color = Color, Heading = Heading });
+      result.Add(new LightBeam { Color = LightBeamColor.white, Heading = Heading });
+      // result.Add(new LightBeam { Color = LightBeamColor.white, Heading = (Heading+2) % 8 });
+      result.Add(new LightBeam { Color = LightBeamColor.white, Heading = (Heading+4) % 8 });
+      // result.Add(new LightBeam { Color = LightBeamColor.white, Heading = (Heading+6) % 8 });
     }
     return result;
   }
 
-  public override void OnQuarterBeat(int counter) {
-    if (counter%4 == 0)
+  public override void OnQuarterBeat(int counter) { 
+    if (counter%4 == 0) {
       Heading = (Heading+1) % 8;
+    }
   }
 
   public void OnDrawGizmos() {

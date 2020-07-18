@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Playables;
 
 public class Board : MonoBehaviour {
   public static Vector2Int[] Vector2IntHeadings = new Vector2Int[8] {
@@ -19,18 +18,13 @@ public class Board : MonoBehaviour {
     return new Vector3(gp.x, 0, gp.y);
   }
 
-  [Header("Animation")]
-  [SerializeField] PlayableDirector PlayableDirector = null;
-  [SerializeField] PlayableAsset IntroPlayable = null;
-  [SerializeField] PlayableAsset OutroPlayable = null;
-
-  public float BeatPeriod = 1f;
+  public LightSink[] LightSinks;
+  public LightSource[] LightSources;
   public PlayObject SelectedObject;
   public Vector2Int Min = Vector2Int.zero;
   public Vector2Int Max = new Vector2Int(10, 10);
   public AudioClip Music;
   public Metronome Metronome;
-  public bool Frozen = false;
 
   public LightNode MarchLightTree(LightSource source, Dictionary<PlayObject, List<LightBeam>> collisions, int maxDepth) {
     LightNode root = new LightNode {
@@ -52,7 +46,7 @@ public class Board : MonoBehaviour {
       return new LightNode { Position = nextCell };
     }
 
-    if (OutOfBounds(nextCell)) {
+    if (!InBounds(nextCell)) {
       return new LightNode { Position = position + vHeading * 100 };
     }
 
@@ -75,33 +69,21 @@ public class Board : MonoBehaviour {
     }
   }
 
-  public float PlayIntro() {
-    PlayableDirector.playableAsset = IntroPlayable;
-    PlayableDirector.Play();
-    return (float)IntroPlayable.duration;
-  }
-
-  public float PlayOutro() {
-    PlayableDirector.playableAsset = OutroPlayable;
-    PlayableDirector.Play();
-    return (float)OutroPlayable.duration;
-  }
-
   public bool ValidMoveLocation(Vector2Int v) {
-    return !OutOfBounds(v) && HasFloorAtCell(v) && (GetObjectAtCell(v) == null);
+    return InBounds(v) && (GetObjectAtCell(v) == null);
   }
 
-  public bool OutOfBounds(Vector2Int v) {
-    return v.x < Min.x || v.y < Min.y || v.x > Max.x || v.y > Max.y;
+  public bool InBounds(Vector2Int v) {
+    bool inX = (v.x >= Min.x) && (v.x <= Max.x);
+    bool inY = (v.y >= Min.y) && (v.y <= Max.y);
+
+    return inX && inY;
   }
 
-  public bool IsVictory() => GetSinks().All(s => s.BeamStrikesThisFrame > 0);
+  public bool IsVictory() => LightSinks.All(s => s.BeamStrikesThisFrame > 0);
 
   public PlayObject[] GetPlayObjects() => GetComponentsInChildren<PlayObject>();
-  public LightSink[] GetSinks() => GetComponentsInChildren<LightSink>();
-  public LightSource[] GetSources() => GetComponentsInChildren<LightSource>();
 
-  // TODO: unity raycast may be better.
   public PlayObject GetObjectAtCell(Vector2Int cell) {
     foreach (PlayObject obj in GetPlayObjects()) {
       if (GetObjectCell(obj.gameObject) == cell)
@@ -114,7 +96,15 @@ public class Board : MonoBehaviour {
     return new Vector2Int((int)obj.transform.position.x, (int)obj.transform.position.z);
   }
 
-  public bool HasFloorAtCell(Vector2Int cell) {
-    return Physics.Raycast(GridToWorldPosition(cell), Vector3.down, .5f);
+  public void OnDrawGizmos() {
+    Vector3 ll = new Vector3(Min.x, 0, Min.y);
+    Vector3 ul = new Vector3(Min.x, 0, Max.y);
+    Vector3 ur = new Vector3(Max.x, 0, Max.y);
+    Vector3 lr = new Vector3(Max.x, 0, Min.y);
+
+    Gizmos.DrawLine(ll, ul);
+    Gizmos.DrawLine(ul, ur);
+    Gizmos.DrawLine(ur, lr);
+    Gizmos.DrawLine(lr, ll);
   }
 }

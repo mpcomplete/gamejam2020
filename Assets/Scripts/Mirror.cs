@@ -2,6 +2,9 @@
 using UnityEngine;
 
 public class Mirror : PlayObject {
+  [SerializeField] string AnimatorStateParameterName = "On";
+  [SerializeField] Animator Animator = null;
+
   public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {
     var result = new List<LightBeam>();
     // Reflection map for a mirror with orientation "0".
@@ -17,6 +20,13 @@ public class Mirror : PlayObject {
       result.Add(new LightBeam { Color = input.Color, Heading = adjustedOutput / 2 });
     }
     return result;
+  }
+
+  public override void OnCollide(List<LightBeam> input) {
+    Animator.SetBool(AnimatorStateParameterName, true);
+  }
+  public override void OnNoncollide() {
+    Animator.SetBool(AnimatorStateParameterName, false);
   }
 
   public override void OnQuarterBeat(int counter) {
