@@ -17,7 +17,8 @@ public class Mirror : PlayObject {
     int outputOrientation = reflectionMap[adjustedInput];
     if (outputOrientation != -1) {
       int adjustedOutput = (outputOrientation + (int)this.Orientation) % 16;
-      result.Add(new LightBeam { Color = input.Color, Heading = adjustedOutput / 2 });
+
+      result.Add(new LightBeam(input.Color, adjustedOutput / 2));
     }
     return result;
   }

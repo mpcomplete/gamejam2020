@@ -44,6 +44,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   orientation: 0
-  Animator: {fileID: 0}
-  Color: 7
-  DebugMode: 0
+  BeamConfiguration: {fileID: 11400000, guid: c53f908af0975b34d82d9238ee0f61fc, type: 2}
+  Star: {fileID: 0}

@@ -6,6 +6,13 @@ using UnityEngine;
 
 public class Game : MonoBehaviour {
   public static KeyCode[] MovementKeyCodes = new KeyCode[4] {
+    KeyCode.UpArrow,
+    KeyCode.RightArrow,
+    KeyCode.DownArrow,
+    KeyCode.LeftArrow
+  };
+
+  public static KeyCode[] AlternativeKeyCodes = new KeyCode[4] {
     KeyCode.W,
     KeyCode.D,
     KeyCode.S,
@@ -26,7 +33,11 @@ public class Game : MonoBehaviour {
   [SerializeField] AudioSource MusicAudioSource = null;
   [SerializeField] AudioSource SFXAudioSource = null;
   [SerializeField] AudioClip VictoryAudioClip = null;
+  [SerializeField] AudioClip WorldVictoryAudioClip = null;
   [SerializeField] float MusicVolume = .2f;
+
+  [Header("UI")]
+  [SerializeField] Animator IntroCardAnimator = null;
 
   [Header("Boards")]
   [SerializeField] Board Board = null;
@@ -37,6 +48,7 @@ public class Game : MonoBehaviour {
   [SerializeField] SelectionIndicator SelectionIndicator = null;
   [SerializeField] LineRenderer[] LineRenderers = null;
   [SerializeField] SpaceField SpaceField = null;
+  [SerializeField] ConstellationLine[] ConstellationLines = null;
 
   [Header("Gameplay")]
   [SerializeField] float BeamIntensity = 1f;
@@ -50,15 +62,75 @@ public class Game : MonoBehaviour {
   [Header("Camera")]
   [SerializeField] Camera Camera = null;
   [SerializeField] float CameraHeight = 60f;
+  [SerializeField] Transform CameraZoomedOutTransform = null;
 
   int LineRendererIndex = 0;
   GameState State = GameState.Intro;
 
-  IEnumerator Start() {
+  void Start() {
     foreach (var board in Boards) {
       board.gameObject.SetActive(false);
     }
-    yield return StartLevel(Boards[BoardIndex]);
+    IntroCardAnimator.gameObject.SetActive(true);
+    SpaceField.gameObject.SetActive(false);
+    foreach (var line in ConstellationLines) {
+      line.gameObject.SetActive(false);
+    }
+  }
+
+  IEnumerator BeginPlay(Board board) {
+    const float TITLE_CARD_FADE_DURATION = 1f;
+
+    IntroCardAnimator.SetBool("Hidden", true);
+    yield return new WaitForSeconds(TITLE_CARD_FADE_DURATION);
+    yield return StartLevel(board);
+    SpaceField.gameObject.SetActive(true);
+  }
+
+  IEnumerator LevelCompletionSequence() {
+    float victoryTimer = 0f;
+
+    DebugDumpLevel("Won");
+    State = GameState.CompletedBoard;
+    SFXAudioSource.clip = VictoryAudioClip;
+    SFXAudioSource.Play();
+    SelectionIndicator.gameObject.SetActive(false);
+
+    // hold with lasers drawn and light emitting from sinks
+    foreach (var sink in Board.LightSinks) {
+      sink.Star.Ignite();
+    }
+    while (victoryTimer < VictoryDuration) {
+      float shotFraction = 1 - (victoryTimer / VictoryDuration);
+      float beamWidth = MaximumBeamWidth * BeamWidthForShotFractionCurve.Evaluate(shotFraction);
+      var noncollided = new HashSet<PlayObject>(Board.GetPlayObjects());
+      var collided = new Dictionary<PlayObject, List<LightBeam>>();
+
+      foreach (LightSource source in Board.LightSources) {
+        RenderLightNode(Board.MarchLightTree(source, collided, MAX_LIGHTBEAM_BOUNCES), beamWidth);
+      }
+      foreach (var kv in collided) {
+        noncollided.Remove(kv.Key);
+        kv.Key.OnCollide(kv.Value);
+      }
+      foreach (var obj in noncollided)
+        obj.OnNoncollide();
+
+      MusicAudioSource.volume = Mathf.Lerp(MusicVolume, 0, victoryTimer);
+      yield return null;
+      victoryTimer += Time.deltaTime;
+    }
+
+    MusicAudioSource.Stop();
+
+    BoardIndex++;
+    if (BoardIndex < Boards.Length) {
+      yield return StartLevel(Boards[BoardIndex]);
+    } else {
+      SFXAudioSource.clip = WorldVictoryAudioClip;
+      SFXAudioSource.Play();
+      State = GameState.Ending;
+    }
   }
 
   Vector3 ExponentialLerpTo(Vector3 a, Vector3 b, float epsilon, float dt) {
@@ -78,6 +150,11 @@ public class Game : MonoBehaviour {
     // Swap the active boards
     Board?.gameObject.SetActive(false);
     Board = board;
+    
+    // Ignite the source if necessary
+    foreach (var source in Board.LightSources) {
+      source.Star.Ignite();
+    }
 
     // TODO: Could be a cross fade?
     // Turn off old music
@@ -151,7 +228,7 @@ public class Game : MonoBehaviour {
   }
 
   Material GetBeamMaterial(LineRenderer renderer, LightBeam beam) {
-    Color color = beam.EmissionColor() * BeamIntensity;
+    Color color = beam.Color * BeamIntensity;
     renderer.material.SetColor("_EmissionColor", color);
     return renderer.material;
   }
@@ -171,7 +248,7 @@ public class Game : MonoBehaviour {
     // Movement handling
     if (Board.SelectedObject) {
       for (int i = 0; i < MovementDirections.Length; i++) {
-        if (Input.GetKeyDown(MovementKeyCodes[i])) {
+        if (Input.GetKeyDown(MovementKeyCodes[i]) || Input.GetKeyDown(AlternativeKeyCodes[i])) {
           Vector2Int currentPosition = Board.GetObjectCell(Board.SelectedObject.gameObject);
           Vector2Int direction = MovementDirections[i];
           Vector2Int nextCell = currentPosition + direction;
@@ -280,53 +357,22 @@ public class Game : MonoBehaviour {
     }
   }
 
-  IEnumerator LevelCompletionSequence() {
-    float victoryTimer = 0f;
-
-    DebugDumpLevel("Won");
-    State = GameState.CompletedBoard;
-    SFXAudioSource.clip = VictoryAudioClip;
-    SFXAudioSource.Play();
-    SelectionIndicator.gameObject.SetActive(false);
-
-    // hold with lasers drawn and light emitting from sinks
-    foreach (var sink in Board.LightSinks) {
-      sink.Star.Ignite();
-    }
-    while (victoryTimer < VictoryDuration) {
-      float shotFraction = 1 - (victoryTimer / VictoryDuration);
-      float beamWidth = MaximumBeamWidth * BeamWidthForShotFractionCurve.Evaluate(shotFraction);
-      var noncollided = new HashSet<PlayObject>(Board.GetPlayObjects());
-      var collided = new Dictionary<PlayObject, List<LightBeam>>();
-
-      foreach (LightSource source in Board.LightSources) {
-        RenderLightNode(Board.MarchLightTree(source, collided, MAX_LIGHTBEAM_BOUNCES), beamWidth);
-      }
-      foreach (var kv in collided) {
-        noncollided.Remove(kv.Key);
-        kv.Key.OnCollide(kv.Value);
-      }
-      foreach (var obj in noncollided)
-        obj.OnNoncollide();
-
-      MusicAudioSource.volume = Mathf.Lerp(MusicVolume, 0, victoryTimer);
-      yield return null;
-      victoryTimer += Time.deltaTime;
-    }
-
-    MusicAudioSource.Stop();
-
-    BoardIndex++;
-    if (BoardIndex < Boards.Length) {
-      yield return StartLevel(Boards[BoardIndex]);
-    } else {
-      State = GameState.Ending;
+  // Intro State
+  void UpdateIntro(float dt) {
+    if (Input.anyKeyDown) {
+      StartCoroutine(BeginPlay(Boards[BoardIndex]));
     }
   }
 
-  // Ending State;
+  // Ending State
   void UpdateEnding(float dt) {
-    Debug.Log("It's ovah");
+    // TODO: This could probably be handled more cleanly in a outro sequence
+    Board.gameObject.SetActive(false);
+    SpaceField.gameObject.SetActive(false);
+    foreach (var line in ConstellationLines) {
+      line.gameObject.SetActive(true);
+    }
+    Camera.transform.position = ExponentialLerpTo(Camera.transform.position, CameraZoomedOutTransform.position, TranslationEpsilon, dt);
   }
 
   void FixedUpdateEnding(float dt) {
@@ -339,6 +385,7 @@ public class Game : MonoBehaviour {
     LineRendererIndex = 0;
     switch (State) {
     case GameState.Intro:
+      UpdateIntro(dt);
       break;
       
     case GameState.ActiveBoard:

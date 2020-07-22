@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class Splitter : PlayObject {
-  [SerializeField] int[] BeamHeadingOffsets = { -1, 1 };
-  [SerializeField] LightBeamColor[] BeamColors = { LightBeamColor.white, LightBeamColor.white };
-
   public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {
-    return Enumerable.Range(0, BeamHeadingOffsets.Length).Select(
-      i => new LightBeam { Color = BeamColors[i], Heading = (8 + input.Heading + Heading + BeamHeadingOffsets[i]) % 8 }).ToList();
+    List<LightBeam> outputs = new List<LightBeam>(2);
+
+    outputs.Add(new LightBeam(input.Color, (8 + Heading - 1) % 8));
+    outputs.Add(new LightBeam(input.Color, (8 + Heading + 1) % 8));
+    return outputs;
   }
 
   public override void OnQuarterBeat(int counter) {
@@ -18,9 +17,17 @@ public class Splitter : PlayObject {
 
   public void OnDrawGizmos() {
     Gizmos.color = UnityEngine.Color.green;
-    foreach (int heading in BeamHeadingOffsets) {
-      int fullHeading = (8 + heading + Heading) % 8;
-      Vector2Int dir = Board.Vector2IntHeadings[fullHeading];
+
+    {
+      int heading = (8 + Heading - 1) % 8;
+      Vector2Int dir = Board.Vector2IntHeadings[heading];
+
+      Gizmos.DrawLine(transform.position, transform.position + new Vector3(dir[0], 0, dir[1]) * 7f);
+    }
+    {
+      int heading = (8 + Heading + 1) % 8;
+      Vector2Int dir = Board.Vector2IntHeadings[heading];
+
       Gizmos.DrawLine(transform.position, transform.position + new Vector3(dir[0], 0, dir[1]) * 7f);
     }
   }

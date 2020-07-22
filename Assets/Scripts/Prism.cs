@@ -4,9 +4,12 @@ using UnityEngine;
 public class Prism : PlayObject {
   public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {
     var result = new List<LightBeam>();
-    int[] headingAdjustMap = { 0, 1, 2, 3 };
-    int headingAdjust = headingAdjustMap[(int)input.Color];
-    result.Add(new LightBeam { Color = input.Color, Heading = (input.Heading + headingAdjust) % 8 });
+
+    result.Add(new LightBeam(input.Color, (Heading - 2) % 8));
+    result.Add(new LightBeam(input.Color, (Heading - 1) % 8));
+    result.Add(new LightBeam(input.Color, (Heading - 0) % 8));
+    result.Add(new LightBeam(input.Color, (Heading + 1) % 8));
+    result.Add(new LightBeam(input.Color, (Heading + 2) % 8));
     return result;
   }
 
