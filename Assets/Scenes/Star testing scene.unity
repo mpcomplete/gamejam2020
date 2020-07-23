@@ -314,6 +314,12 @@ PrefabInstance:
       propertyPath: orientation
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 2667251841133715574, guid: 13080089eb9164248971bb6d8056c20b,
+        type: 3}
+      propertyPath: BeamConfiguration
+      value: 
+      objectReference: {fileID: 11400000, guid: 284edce01c5f73946922f08e7fdffe05,
+        type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 13080089eb9164248971bb6d8056c20b, type: 3}
 --- !u!4 &94311123 stripped

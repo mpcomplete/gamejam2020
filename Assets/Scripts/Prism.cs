@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Prism : PlayObject {
   public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {
-    var result = new List<LightBeam>();
+    var result = new List<LightBeam>(5);
 
     result.Add(new LightBeam(input.Color, (Heading - 2) % 8));
     result.Add(new LightBeam(input.Color, (Heading - 1) % 8));
