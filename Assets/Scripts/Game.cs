@@ -58,6 +58,7 @@ public class Game : MonoBehaviour {
   [SerializeField] float StartLevelDuration = 1f;
   [SerializeField] float RotationalEpsilon = 1e-5f;
   [SerializeField] float TranslationEpsilon = 1e-5f;
+  [SerializeField] Vector3 SelectionIndicatorOffset = .5f * Vector3.up;
   
   [Header("Camera")]
   [SerializeField] Camera Camera = null;
@@ -229,11 +230,16 @@ public class Game : MonoBehaviour {
     if (Board.SelectedObject) {
       for (int i = 0; i < MovementDirections.Length; i++) {
         if (Input.GetKeyDown(MovementKeyCodes[i]) || Input.GetKeyDown(AlternativeKeyCodes[i])) {
-          Vector2Int currentPosition = WorldPositionToGrid(Board.SelectedObject.transform.position);
-          Vector2Int direction = MovementDirections[i];
-          Vector2Int nextCell = currentPosition + direction;
+          if (Board.SelectedObject.TryGetComponent(out TargetMover tm)) {
+            Vector2Int direction = MovementDirections[i];
+            Vector2Int nextCell = tm.TargetCell + direction;
+            
+            tm.TargetCell = nextCell;
+          } else {
+            Vector2Int currentPosition = WorldPositionToGrid(Board.SelectedObject.transform.position);
+            Vector2Int direction = MovementDirections[i];
+            Vector2Int nextCell = currentPosition + direction;
 
-          if (Board.ValidMoveLocation(nextCell)) {
             Board.SelectedObject.transform.position = GridToWorldPosition(nextCell);
           }
         }
@@ -262,17 +268,6 @@ public class Game : MonoBehaviour {
       foreach (var obj in noncollided) {
         obj.OnNoncollide();
       }
-    }
-
-    // Selection indicator logic
-    if (Board.SelectedObject) {
-      Vector2Int selectedGridCell = WorldPositionToGrid(Board.SelectedObject.transform.position);
-      Vector3 selectedPosition = Vector3.up + GridToWorldPosition(selectedGridCell);
-
-      SelectionIndicator.gameObject.SetActive(true);
-      SelectionIndicator.MoveTowards(dt, selectedPosition);
-    } else {
-      SelectionIndicator.gameObject.SetActive(false);
     }
 
     // Winning conditions
@@ -321,6 +316,25 @@ public class Game : MonoBehaviour {
     // Smoothly animate all the target mover's
     foreach (TargetMover tm in Board.GetComponentsInChildren<TargetMover>()) {
       tm.transform.position = ExponentialLerpTo(tm.transform.position, GridToWorldPosition(tm.TargetCell), TranslationEpsilon, dt);
+    }
+
+    // Selection indicator logic
+    if (Board.SelectedObject) {
+      if (Board.SelectedObject.TryGetComponent(out TargetMover tm)) {
+        Vector2Int selectedGridCell = tm.TargetCell;
+        Vector3 selectedPosition = SelectionIndicatorOffset + GridToWorldPosition(selectedGridCell);
+
+        SelectionIndicator.gameObject.SetActive(true);
+        SelectionIndicator.transform.position = ExponentialLerpTo(SelectionIndicator.transform.position, selectedPosition, TranslationEpsilon, dt);
+      } else {
+        Vector2Int selectedGridCell = WorldPositionToGrid(Board.SelectedObject.transform.position);
+        Vector3 selectedPosition = SelectionIndicatorOffset + GridToWorldPosition(selectedGridCell);
+
+        SelectionIndicator.gameObject.SetActive(true);
+        SelectionIndicator.transform.position = ExponentialLerpTo(SelectionIndicator.transform.position, selectedPosition, TranslationEpsilon, dt);
+      }
+    } else {
+      SelectionIndicator.gameObject.SetActive(false);
     }
   }
 
