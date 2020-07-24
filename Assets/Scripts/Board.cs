@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static MathUtils;
 
 public class Board : MonoBehaviour {
   public static Vector2Int[] Vector2IntHeadings = new Vector2Int[8] {
@@ -14,10 +15,6 @@ public class Board : MonoBehaviour {
     new Vector2Int(-1, 1)   // north west
   };
 
-  public static Vector3 GridToWorldPosition(Vector2Int gp) {
-    return new Vector3(gp.x, 0, gp.y);
-  }
-
   public LightSink[] LightSinks;
   public LightSource[] LightSources;
   public PlayObject SelectedObject;
@@ -29,7 +26,7 @@ public class Board : MonoBehaviour {
   public LightNode MarchLightTree(LightSource source, Dictionary<PlayObject, List<LightBeam>> collisions, int maxDepth) {
     LightNode root = new LightNode {
       Object = source,
-      Position = GetObjectCell(source.gameObject),
+      Position = WorldPositionToGrid(source.transform.position),
       LightBeams = source.ComputeOutgoingLightBeams(null)
     };
     foreach (LightBeam lightBeam in root.LightBeams) {
@@ -69,31 +66,46 @@ public class Board : MonoBehaviour {
     }
   }
 
+  public int ObjectsWith<A, B>(GameObject[] objects) where A : MonoBehaviour where B : MonoBehaviour {
+    int index = 0;
+    foreach (A a in GetComponentsInChildren<A>()) {
+      if (a.GetComponent<B>()) {
+        objects[index] = a.gameObject;
+        index++;
+      }
+    }
+    return index;
+  }
+
   public bool ValidMoveLocation(Vector2Int v) {
     return InBounds(v) && (GetObjectAtCell(v) == null);
   }
 
   public bool InBounds(Vector2Int v) {
-    bool inX = (v.x >= Min.x) && (v.x <= Max.x);
-    bool inY = (v.y >= Min.y) && (v.y <= Max.y);
-
-    return inX && inY;
+    return v.x >= Min.x && v.x <= Max.x && v.y >= Min.y && v.y <= Max.y;
   }
 
-  public bool IsVictory() => LightSinks.All(s => s.BeamStrikesThisFrame > 0);
+  public bool IsVictory() {
+    return LightSinks.All(s => s.BeamStrikesThisFrame > 0);
+  }
 
-  public PlayObject[] GetPlayObjects() => GetComponentsInChildren<PlayObject>();
+  public PlayObject[] GetPlayObjects() {
+    return GetComponentsInChildren<PlayObject>();
+  }
 
   public PlayObject GetObjectAtCell(Vector2Int cell) {
     foreach (PlayObject obj in GetPlayObjects()) {
-      if (GetObjectCell(obj.gameObject) == cell)
-        return obj;
+      if (obj.TryGetComponent(out TargetMover tm)) {
+        if (tm.TargetCell == cell) {
+          return obj;
+        }
+      } else {
+        if (WorldPositionToGrid(obj.transform.position) == cell) {
+          return obj;
+        }
+      }
     }
     return null;
-  }
-
-  public Vector2Int GetObjectCell(GameObject obj) {
-    return new Vector2Int((int)obj.transform.position.x, (int)obj.transform.position.z);
   }
 
   public void OnDrawGizmos() {
@@ -102,6 +114,7 @@ public class Board : MonoBehaviour {
     Vector3 ur = new Vector3(Max.x, 0, Max.y);
     Vector3 lr = new Vector3(Max.x, 0, Min.y);
 
+    Gizmos.color = Min.x < Max.x && Min.y < Max.y ? Color.green : Color.red;
     Gizmos.DrawLine(ll, ul);
     Gizmos.DrawLine(ul, ur);
     Gizmos.DrawLine(ur, lr);

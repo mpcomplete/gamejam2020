@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
+using static MathUtils;
 
 public class Game : MonoBehaviour {
   public static KeyCode[] MovementKeyCodes = new KeyCode[4] {
@@ -90,7 +90,6 @@ public class Game : MonoBehaviour {
   IEnumerator LevelCompletionSequence() {
     float victoryTimer = 0f;
 
-    DebugDumpLevel("Won");
     State = GameState.CompletedBoard;
     SFXAudioSource.clip = VictoryAudioClip;
     SFXAudioSource.Play();
@@ -113,8 +112,9 @@ public class Game : MonoBehaviour {
         noncollided.Remove(kv.Key);
         kv.Key.OnCollide(kv.Value);
       }
-      foreach (var obj in noncollided)
+      foreach (var obj in noncollided) {
         obj.OnNoncollide();
+      }
 
       MusicAudioSource.volume = Mathf.Lerp(MusicVolume, 0, victoryTimer);
       yield return null;
@@ -131,14 +131,6 @@ public class Game : MonoBehaviour {
       SFXAudioSource.Play();
       State = GameState.Ending;
     }
-  }
-
-  Vector3 ExponentialLerpTo(Vector3 a, Vector3 b, float epsilon, float dt) {
-    return Vector3.Lerp(a, b, 1 - Mathf.Pow(epsilon, dt));
-  }
-
-  Quaternion ExponentialSlerpTo(Quaternion a, Quaternion b, float epsilon, float dt) {
-    return Quaternion.Slerp(a, b, 1 - Mathf.Pow(epsilon, dt));
   }
 
   IEnumerator StartLevel(Board board) {
@@ -161,8 +153,8 @@ public class Game : MonoBehaviour {
     MusicAudioSource.Stop();
 
     Vector2Int center = Board.Min + (Board.Max - Board.Min) / 2;
-    Vector3 targetCenter = Board.GridToWorldPosition(center);
-    Vector3 targetCamera = Board.GridToWorldPosition(center) + new Vector3(0, CameraHeight, -CameraHeight);
+    Vector3 targetCenter = GridToWorldPosition(center);
+    Vector3 targetCamera = GridToWorldPosition(center) + new Vector3(0, CameraHeight, -CameraHeight);
     Vector3 currentCenter = SpaceField.transform.position;
     Vector3 currentCamera = Camera.transform.position;
 
@@ -201,20 +193,13 @@ public class Game : MonoBehaviour {
     yield return null;
   }
 
-  void DebugDumpLevel(string prefix) {
-    var tmp1 = String.Join(",", Board.GetComponentsInChildren<LightSource>().Select(o => o.Orientation.ToString()));
-    var tmp2 = String.Join(",", Board.GetComponentsInChildren<Mirror>().Select(o => o.Orientation.ToString()));
-    var tmp3 = String.Join(",", Board.GetComponentsInChildren<Splitter>().Select(o => o.Orientation.ToString()));
-    Debug.Log($"{prefix} level {BoardIndex} Source:{tmp1}, mirrors:{tmp2}, splitters:{tmp3}");
-  }
-
   void RenderLightNode(LightNode node, float width) {
     for (int i = 0; i < node.LightBeams.Count; i++) {
       LightBeam lb = node.LightBeams[i];
       LightNode ln = node.LightNodes[i];
       LineRenderer lr = LineRenderers[LineRendererIndex++];
-      Vector3 origin = Board.GridToWorldPosition(node.Position);
-      Vector3 destination = Board.GridToWorldPosition(ln.Position);
+      Vector3 origin = GridToWorldPosition(node.Position);
+      Vector3 destination = GridToWorldPosition(ln.Position);
 
       lr.gameObject.SetActive(true);
       lr.positionCount = 2;
@@ -228,8 +213,7 @@ public class Game : MonoBehaviour {
   }
 
   Material GetBeamMaterial(LineRenderer renderer, LightBeam beam) {
-    Color color = beam.Color * BeamIntensity;
-    renderer.material.SetColor("_EmissionColor", color);
+    renderer.material.SetColor("_EmissionColor", beam.Color * BeamIntensity);
     return renderer.material;
   }
 
@@ -239,39 +223,24 @@ public class Game : MonoBehaviour {
     }
   }
 
-  [SerializeField] bool DebugMode = false;
-  int debugIndex = -1;
-  PlayObject debugObject { get => debugIndex < 0 ? null : Board.GetPlayObjects()[debugIndex]; }
-
   // Active Board State
   void UpdateActiveBoard(float dt) {
     // Movement handling
     if (Board.SelectedObject) {
       for (int i = 0; i < MovementDirections.Length; i++) {
         if (Input.GetKeyDown(MovementKeyCodes[i]) || Input.GetKeyDown(AlternativeKeyCodes[i])) {
-          Vector2Int currentPosition = Board.GetObjectCell(Board.SelectedObject.gameObject);
+          Vector2Int currentPosition = WorldPositionToGrid(Board.SelectedObject.transform.position);
           Vector2Int direction = MovementDirections[i];
           Vector2Int nextCell = currentPosition + direction;
 
           if (Board.ValidMoveLocation(nextCell)) {
-            Board.SelectedObject.transform.position = Board.GridToWorldPosition(nextCell);
+            Board.SelectedObject.transform.position = GridToWorldPosition(nextCell);
           }
         }
       }
     }
 
-    // Selection indicator logic
-    if (Board.SelectedObject) {
-      Vector2Int selectedGridCell = Board.GetObjectCell(Board.SelectedObject.gameObject);
-      Vector3 selectedPosition = Vector3.up + Board.GridToWorldPosition(selectedGridCell);
-
-      SelectionIndicator.gameObject.SetActive(true);
-      SelectionIndicator.MoveTowards(dt, selectedPosition);
-    } else {
-      SelectionIndicator.gameObject.SetActive(false);
-    }
-
-    // Tick all light sinks
+    // Reset all light sinks
     foreach (LightSink sink in Board.LightSinks) {
       sink.BeamStrikesThisFrame = 0;
     }
@@ -290,53 +259,25 @@ public class Game : MonoBehaviour {
         noncollided.Remove(kv.Key);
         kv.Key.OnCollide(kv.Value);
       }
-      foreach (var obj in noncollided)
+      foreach (var obj in noncollided) {
         obj.OnNoncollide();
+      }
     }
 
-    // Update the spacefield
-    {
-      Star sourceStar = Board.LightSources[0].Star;
-      Star sinkStar = Board.LightSinks[0].Star;
-      Vector3[] positions = new Vector3[2] { sourceStar.transform.position, sinkStar.transform.position };
-      float[] weights = new float[2] { sourceStar.NormalizedMass, sinkStar.NormalizedMass };
+    // Selection indicator logic
+    if (Board.SelectedObject) {
+      Vector2Int selectedGridCell = WorldPositionToGrid(Board.SelectedObject.transform.position);
+      Vector3 selectedPosition = Vector3.up + GridToWorldPosition(selectedGridCell);
 
-      SpaceField.Render(positions, weights);
+      SelectionIndicator.gameObject.SetActive(true);
+      SelectionIndicator.MoveTowards(dt, selectedPosition);
+    } else {
+      SelectionIndicator.gameObject.SetActive(false);
     }
 
     // Winning conditions
     if (Board.IsVictory()) {
       StartCoroutine(LevelCompletionSequence());
-    }
-
-    // Debug stuff
-    if (DebugMode) {
-      if (Input.GetKeyDown(KeyCode.Equals)) {
-        StartCoroutine(LevelCompletionSequence());
-      }
-      if (Input.GetKeyDown(KeyCode.Minus)) {
-        Destroy(Board.gameObject);
-        BoardIndex = (BoardIndex + 1) % Boards.Length;
-        Board newBoard = Instantiate(Boards[BoardIndex]);
-        StartLevel(newBoard);
-      }
-      if (Input.GetKeyDown(KeyCode.Tab)) {
-        if (Input.GetKey(KeyCode.LeftShift)) {
-          debugIndex = -1;
-        } else {
-          do {
-            debugIndex = (debugIndex + 1) % Board.GetPlayObjects().Length;
-          } while (!(debugObject.GetComponent<Mirror>() || debugObject.GetComponent<LightSource>() || debugObject.GetComponent<Splitter>()));
-          Debug.Log($"Selected {debugObject} at {debugObject.transform.position}");
-          DebugDumpLevel("Current state");
-        }
-      }
-      if (Input.GetKeyDown(KeyCode.Comma) && debugIndex >= 0) {
-        debugObject.Orientation--;
-      }
-      if (Input.GetKeyDown(KeyCode.Period) && debugIndex >= 0) {
-        debugObject.Orientation++;
-      }
     }
   }
 
@@ -344,6 +285,27 @@ public class Game : MonoBehaviour {
     if (Board.Metronome.Tick(dt)) {
       foreach (var playObject in Board.GetPlayObjects()) {
         playObject.OnQuarterBeat(Board.Metronome.QuarterBeats);
+      }
+
+      GameObject[] orbiters = new GameObject[16];
+      int count = Board.ObjectsWith<Orbiter, TargetMover>(orbiters);
+
+      for (int i = 0; i < count; i++) {
+        Orbiter orbiter = orbiters[i].GetComponent<Orbiter>();
+        TargetMover targetMover = orbiters[i].GetComponent<TargetMover>();
+
+        if (Board.Metronome.QuarterBeats % orbiter.QuarterBeatsPerOrientation == 0) {
+          int newOrientation = (orbiter.Orientation + orbiter.Sign) % 8;
+          Vector2Int targetCell = Board.Vector2IntHeadings[newOrientation] * orbiter.Radius;
+
+          // This is an integer approximation of the side-lengths of a 45-degree triangle
+          if (newOrientation % 2 != 0) {
+            targetCell = targetCell / 2 * 14 / 10;
+          }
+
+          orbiter.Orientation = newOrientation;
+          targetMover.TargetCell = targetCell;
+        }
       }
     }
 
@@ -354,6 +316,11 @@ public class Game : MonoBehaviour {
       Quaternion targetRotation = Quaternion.Euler(eulerAngles.x, orientation * 360f / 16f, eulerAngles.z);
 
       obj.transform.rotation = ExponentialSlerpTo(obj.transform.rotation, targetRotation, RotationalEpsilon, dt);
+    }
+
+    // Smoothly animate all the target mover's
+    foreach (TargetMover tm in Board.GetComponentsInChildren<TargetMover>()) {
+      tm.transform.position = ExponentialLerpTo(tm.transform.position, GridToWorldPosition(tm.TargetCell), TranslationEpsilon, dt);
     }
   }
 
