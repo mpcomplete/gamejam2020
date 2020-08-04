@@ -4,6 +4,7 @@ using UnityEngine;
 public class LightSource : PlayObject {
   [SerializeField] BeamConfiguration BeamConfiguration = null;
   public Star Star;
+  public float Energy = 1f;
 
   public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {
     List<LightBeam> result = new List<LightBeam>();

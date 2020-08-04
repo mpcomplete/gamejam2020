@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
 
 public class Prism : PlayObject {
   public override List<LightBeam> ComputeOutgoingLightBeams(LightBeam input) {

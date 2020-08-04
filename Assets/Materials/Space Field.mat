@@ -74,10 +74,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - Displacement: 1
-    - Falloff: 3
+    - Displacement: 2
+    - Falloff: 6
     - Grid_Color_Intensity_Multiplier: 5
     - Power: 1
+    - Radius: 8
     - Transparency: 1
     - Vector1_1EFB7697: 0.5
     - Vector1_54C1779D: 1.5
@@ -86,8 +87,10 @@ Material:
     - Vector1_9358E892: 4
     - Vector1_B70CAD86: 1
     - Vector1_D6D6876F: 2
-    - Weight_0: 0.5
-    - Weight_1: 0.5
+    - Weight_0: 1
+    - Weight_1: 10000
+    - Weight_2: 10000
+    - Weight_3: 10000
     - _AlphaClip: 0
     - _Blend: 0
     - _BumpScale: 1
@@ -112,9 +115,11 @@ Material:
     m_Colors:
     - Grid_Line_Color: {r: 0.6745098, g: 0.6745098, b: 0.8784314, a: 1}
     - Position_0: {r: 0, g: 0, b: 0, a: 0}
-    - Position_1: {r: 20, g: 0, b: -1, a: 0}
+    - Position_1: {r: 0, g: 0, b: 0, a: 0}
+    - Position_2: {r: 0, g: 0, b: 0, a: 0}
+    - Position_3: {r: 0, g: 0, b: 0, a: 0}
     - UV_Offset: {r: 0, g: 0, b: 0, a: 0}
-    - UV_Tiling: {r: 48, g: 48, b: 0, a: 0}
+    - UV_Tiling: {r: 100, g: 100, b: 0, a: 0}
     - UV_Tiling_And_Offset: {r: 1, g: 1, b: 0, a: 0}
     - Vector2_22DDB1DC: {r: 40, g: 20, b: 0, a: 0}
     - Vector4_2276E665: {r: 0, g: 0, b: 0, a: 0}

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2667251841133715569}
   - component: {fileID: 1510724531307793923}
+  - component: {fileID: 3220854431061642794}
   m_Layer: 0
   m_Name: Light Sink
   m_TagString: Untagged
@@ -44,5 +45,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   orientation: 0
-  Animator: {fileID: 0}
   BeamStrikesThisFrame: 0
+  Star: {fileID: 0}
+--- !u!135 &3220854431061642794
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2667251841133715568}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}

@@ -50,6 +50,10 @@ public class Game : MonoBehaviour {
   [SerializeField] SpaceField SpaceField = null;
   [SerializeField] ConstellationLine[] ConstellationLines = null;
 
+  [Header("Systems")]
+  [SerializeField] OrbitRenderingSystem OrbitRenderingSystem = null;
+  [SerializeField] RaytracingSystem RaytracingSystem = null;
+
   [Header("Gameplay")]
   [SerializeField] float BeamIntensity = 1f;
   [SerializeField] float MaximumBeamWidth = .1f;
@@ -282,27 +286,26 @@ public class Game : MonoBehaviour {
         playObject.OnQuarterBeat(Board.Metronome.QuarterBeats);
       }
 
+      /*
       GameObject[] orbiters = new GameObject[16];
-      int count = Board.ObjectsWith<Orbiter, TargetMover>(orbiters);
+      int count = Board.ObjectsWith<Orbiter, SmoothMover>(orbiters);
 
       for (int i = 0; i < count; i++) {
         Orbiter orbiter = orbiters[i].GetComponent<Orbiter>();
-        TargetMover targetMover = orbiters[i].GetComponent<TargetMover>();
+        SmoothMover smoothMover = orbiters[i].GetComponent<SmoothMover>();
 
         if (Board.Metronome.QuarterBeats % orbiter.QuarterBeatsPerOrientation == 0) {
-          int newOrientation = (orbiter.Orientation + orbiter.Sign) % 8;
-          Vector2Int targetCell = Board.Vector2IntHeadings[newOrientation] * orbiter.Radius;
-
-          // This is an integer approximation of the side-lengths of a 45-degree triangle
-          if (newOrientation % 2 != 0) {
-            targetCell = targetCell / 2 * 14 / 10;
-          }
+          int newOrientation = (orbiter.Orientation + orbiter.Sign) % Orbiter.UNIQUE_ORIENTATIONS;
+          float orbitFraction = (float)newOrientation / Orbiter.UNIQUE_ORIENTATIONS;
+          Vector3 localPosition = Orbiter.CalculatePosition(orbiter, orbitFraction);
 
           orbiter.Orientation = newOrientation;
-          targetMover.TargetCell = targetCell;
+          smoothMover.TargetPosition = localPosition;
         }
       }
+      */
     }
+
 
     // Smoothly animate the transforms of all play objects based on orientation
     foreach (PlayObject obj in Board.GetPlayObjects()) {
@@ -316,6 +319,18 @@ public class Game : MonoBehaviour {
     // Smoothly animate all the target mover's
     foreach (TargetMover tm in Board.GetComponentsInChildren<TargetMover>()) {
       tm.transform.position = ExponentialLerpTo(tm.transform.position, GridToWorldPosition(tm.TargetCell), TranslationEpsilon, dt);
+    }
+
+    // Smoothly-animate all the smooth mover's
+    foreach (SmoothMover sm in Board.GetComponentsInChildren<SmoothMover>()) {
+      sm.transform.localPosition = ExponentialLerpTo(sm.transform.localPosition, sm.TargetPosition, sm.LerpEpsilon, dt);
+    }
+
+    // Emit rays from all objects
+    {
+      RaytracingSystem.LightSources = Board.LightSources;       
+      RaytracingSystem.LightSourceCount = Board.LightSources.Length;
+      RaytracingSystem.Schedule();
     }
 
     // Selection indicator logic
@@ -381,23 +396,22 @@ public class Game : MonoBehaviour {
       break;
     }
 
-    // TODO: Maybe it's more sane to just... do this by iterating all the stars in the level?
+    // Render the orbits 
+    if (Board) {
+      /*
+      Orbiter[] orbiters = Board.GetComponentsInChildren<Orbiter>();
+
+      OrbitRenderingSystem.Orbiters = orbiters;
+      OrbitRenderingSystem.Count = orbiters.Length;
+      OrbitRenderingSystem.Schedule();
+      */
+    }
+
     // Update the spacefield
     if (Board) {
-      Vector3[] positions = new Vector3[4];
-      float[] normalizedMasses = new float[4];
-      int i = 0;
-      foreach (var source in Board.LightSources) {
-        positions[i] = source.Star.transform.position;
-        normalizedMasses[i] = source.Star.NormalizedMass;
-        i++;
-      }
-      foreach (var sink in Board.LightSinks) {
-        positions[i] = sink.Star.transform.position;
-        normalizedMasses[i] = sink.Star.NormalizedMass;
-        i++;
-      }
-      SpaceField.Render(positions, normalizedMasses);
+      SpaceField.NormalizedMasses = FindObjectsOfType<NormalizedMass>();
+      SpaceField.Count = SpaceField.NormalizedMasses.Length;
+      SpaceField.Schedule();
     }
     DisableUnusedLineRenderers();
   }

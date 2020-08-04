@@ -1,6 +1,5 @@
 ﻿[System.Serializable]
-public class Metronome
-{
+public class Metronome {
     public int Beats = 0;
     public float TimeTillNextBeat = 0;
     public float BeatPeriod = .5f;
@@ -19,7 +18,7 @@ public class Metronome
             return false;
         }
 
-        while (dt > TimeTillNextQuarterBeat && cycles < MAX_CYCLES) {
+        while (dt >= TimeTillNextQuarterBeat && cycles < MAX_CYCLES) {
             ticked = true;
             QuarterBeats++;
             cycles++;

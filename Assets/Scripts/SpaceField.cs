@@ -7,11 +7,17 @@ public class SpaceField : MonoBehaviour
     [SerializeField] int GridCellSubdivision = 5;
     [SerializeField] Vector2Int Min = new Vector2Int(-1, -1);
     [SerializeField] Vector2Int Max = new Vector2Int(1, 1);
+    public NormalizedMass[] NormalizedMasses;
+    public int Count;
 
-    public void Render(Vector3[] Positions, float[] Weights) {
-        for (int i = 0; i < Positions.Length; i++) {
-            MeshRenderer.material.SetVector($"Position_{i}", Positions[i]);
-            MeshRenderer.material.SetFloat($"Weight_{i}", Weights[i]);
+    public void Schedule() {
+        for (int i = 0; i < Count; i++) {
+            MeshRenderer.material.SetVector($"Position_{i}", NormalizedMasses[i].GetComponent<Transform>().position);
+            MeshRenderer.material.SetFloat($"Weight_{i}", NormalizedMasses[i].Value);
+
+        }
+        for (int i = Count; i < 4; i++) {
+            MeshRenderer.material.SetFloat($"Weight_{i}", 10000f);
         }
     }
 
