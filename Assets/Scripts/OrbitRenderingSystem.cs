@@ -3,8 +3,6 @@ using static Unity.Mathematics.math;
 using static MathUtils;
 
 public class OrbitRenderingSystem : MonoBehaviour {
-    public static int MAX_RESOLUTION = 256;
-
     public LineRenderer[] LineRenderers;
     public Orbiter[] Orbiters;
     public int Count;
@@ -12,7 +10,11 @@ public class OrbitRenderingSystem : MonoBehaviour {
 
     public void Schedule() {
         for (int i = 0; i < Count; i++) {
+            LineRenderers[i].gameObject.SetActive(true);
             Execute(i, Orbiters[i], Orbiters[i].GetComponent<Transform>());
+        }
+        for (int i = Count; i < LineRenderers.Length; i++) {
+            LineRenderers[i].gameObject.SetActive(false);
         }
     }
 
