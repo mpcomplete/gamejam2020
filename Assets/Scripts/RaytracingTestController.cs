@@ -72,22 +72,37 @@ public class RaytracingTestController : MonoBehaviour {
             return futurePosition;
         }
 
-        foreach (var orbitPredictor in orbitPredictors) {
-            Orbiter orbiter = orbitPredictor.GetComponent<Orbiter>();
-            float3 futurePosition = FutureLocalPosition(orbiter, OrbitPredictorTimeInTheFuture);
-            float3 futureHeading = normalize(new float3(-futurePosition.z, 0, futurePosition.x));
-            Transform parent = orbitPredictor.transform.parent;
+        float FutureLocalRotation(Rotator r, float t) {
+            return (r.Radians + (float)r.Direction * TWO_PI / r.Period * t) % (TWO_PI);
+        }
 
-            while (parent != null) {
-                if (parent.TryGetComponent<Orbiter>(out Orbiter o)) {
+        float3 FuturePosition(Transform transform, float t) {
+            float3 futurePosition = new float3(0, 0, 0);
+
+            while (transform != null) {
+                if (transform.TryGetComponent<Rotator>(out Rotator r)) {
+                    // Debug.Log("Rotator " + transform.name);
+                    float radians = FutureLocalRotation(r, OrbitPredictorTimeInTheFuture);
+                    float degrees = radians * 57.2958f; // approximation for conversion to degrees
+
+                    futurePosition = Quaternion.AngleAxis(degrees, Vector3.up) * (Vector3)futurePosition;
+                }
+                if (transform.TryGetComponent<Orbiter>(out Orbiter o)) {
+                    // Debug.Log("Orbiter " + transform.name);
                     futurePosition += FutureLocalPosition(o, OrbitPredictorTimeInTheFuture);
                 } else {
-                    futurePosition += (float3)parent.localPosition;
+                    // Debug.Log("Empty " + transform.name);
+                    futurePosition += (float3)transform.localPosition;
                 }
-                parent = parent.parent;
+                transform = transform.parent;
             }
+            return futurePosition;
+        }
+
+        foreach (var orbitPredictor in orbitPredictors) {
+            float3 futurePosition = FuturePosition(orbitPredictor.transform, OrbitPredictorTimeInTheFuture);
+
             Debug.DrawLine(orbitPredictor.transform.position, futurePosition, Color.cyan);
-            Debug.DrawRay(futurePosition, futureHeading * 4, Color.blue);
         }
 
 
