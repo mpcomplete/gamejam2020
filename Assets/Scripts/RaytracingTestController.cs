@@ -81,17 +81,14 @@ public class RaytracingTestController : MonoBehaviour {
 
             while (transform != null) {
                 if (transform.TryGetComponent<Rotator>(out Rotator r)) {
-                    // Debug.Log("Rotator " + transform.name);
-                    float radians = FutureLocalRotation(r, OrbitPredictorTimeInTheFuture);
+                    float radians = FutureLocalRotation(r, t);
                     float degrees = radians * 57.2958f; // approximation for conversion to degrees
 
                     futurePosition = Quaternion.AngleAxis(degrees, Vector3.up) * (Vector3)futurePosition;
                 }
                 if (transform.TryGetComponent<Orbiter>(out Orbiter o)) {
-                    // Debug.Log("Orbiter " + transform.name);
-                    futurePosition += FutureLocalPosition(o, OrbitPredictorTimeInTheFuture);
+                    futurePosition += FutureLocalPosition(o, t);
                 } else {
-                    // Debug.Log("Empty " + transform.name);
                     futurePosition += (float3)transform.localPosition;
                 }
                 transform = transform.parent;
@@ -100,9 +97,12 @@ public class RaytracingTestController : MonoBehaviour {
         }
 
         foreach (var orbitPredictor in orbitPredictors) {
-            float3 futurePosition = FuturePosition(orbitPredictor.transform, OrbitPredictorTimeInTheFuture);
+            int count = orbitPredictor.LineRenderer.positionCount;
+            for (int i = 0; i < count; i++) {
+                float time = (float)i / (float)(count - 1) * OrbitPredictorTimeInTheFuture;
 
-            Debug.DrawLine(orbitPredictor.transform.position, futurePosition, Color.cyan);
+                orbitPredictor.LineRenderer.SetPosition(i, FuturePosition(orbitPredictor.transform, time));
+            }
         }
 
 
