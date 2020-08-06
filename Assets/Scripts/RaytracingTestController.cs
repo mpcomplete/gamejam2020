@@ -32,7 +32,7 @@ public class RaytracingTestController : MonoBehaviour {
 
         foreach (var orbiter in orbiters) {
             orbiter.Radians = (orbiter.Radians + (float)orbiter.Direction * TWO_PI / orbiter.Period * dt) % (TWO_PI);
-            orbiter.transform.position = orbiter.transform.parent.position + orbiter.Radius * UnitCircle(orbiter.Radians);
+            orbiter.transform.localPosition = orbiter.Radius * UnitCircle(orbiter.Radians);
         }
 
         // Update all rotators
@@ -40,7 +40,7 @@ public class RaytracingTestController : MonoBehaviour {
 
         foreach (var rotator in rotators) {
             rotator.Radians = (rotator.Radians + (float)rotator.Direction * TWO_PI / rotator.Period * dt) % (TWO_PI);
-            rotator.transform.LookAt(rotator.transform.position + UnitCircle(rotator.Radians));
+            rotator.transform.localRotation = Quaternion.AngleAxis(-rotator.Radians * 57.2958f, Vector3.up);
         }
 
         // How does a skyhook work? 
@@ -84,7 +84,7 @@ public class RaytracingTestController : MonoBehaviour {
                     float radians = FutureLocalRotation(r, t);
                     float degrees = radians * 57.2958f; // approximation for conversion to degrees
 
-                    futurePosition = Quaternion.AngleAxis(degrees, Vector3.up) * (Vector3)futurePosition;
+                    futurePosition = Quaternion.AngleAxis(-degrees, Vector3.up) * (Vector3)futurePosition;
                 }
                 if (transform.TryGetComponent<Orbiter>(out Orbiter o)) {
                     futurePosition += FutureLocalPosition(o, t);
@@ -94,6 +94,10 @@ public class RaytracingTestController : MonoBehaviour {
                 transform = transform.parent;
             }
             return futurePosition;
+        }
+
+        float3 Trajectory(Transform transform, float t, float deltaTime) {
+            return (FuturePosition(transform, t + deltaTime) - FuturePosition(transform, t - deltaTime)) / (2 * deltaTime);
         }
 
         foreach (var orbitPredictor in orbitPredictors) {
