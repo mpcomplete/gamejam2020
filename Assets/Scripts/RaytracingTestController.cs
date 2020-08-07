@@ -16,6 +16,9 @@ public class RaytracingTestController : MonoBehaviour {
 
     [Range(0, 10)]
     public float OrbitPredictorTimeInTheFuture = 1f;
+    public float RangeAccuracy = .9f;
+
+    public Velocity LaunchablePrefab;
 
     public void Start() {
         // TODO: This is a stupid hack because this system is half-assed
@@ -24,46 +27,52 @@ public class RaytracingTestController : MonoBehaviour {
         }
     }
 
+    // How does a skyhook work? 
+    // In the real world, there are multiple components to a successful skyhook system
+    // Fundamentally, you must successfully intercept the skyhook, then ride the skyhook until
+    // you have a trajectory that is roughly aligned with your destination's FUTURE
+    // position/orientation based on your current speed. You then release from the skyhook and 
+    // mostly coast or lightly navigate towards your destination until you are relatively close at 
+    // which time you take active control back to successfully intercept your target
+
+    // This neatly divides the skyhook system into three phases:
+    //      Intercepting the skyhook from your current position
+    //      Riding the skyhook waiting for a sufficiently safe path towards your destination's future orientation
+    //      Intercepting your destination from your current position 
+
+    // This implies that we will need to be able to calculate the future position and orientation of objects in question
+    // This neccessarily requires us to make certain assumptions about the behaviors of these objects. Long story short,
+    // we need to assume that they have stable or predictable motions and thus are assumed to be restricted to orbit
+    // and rotation. However, we need to be able to answer these questions for objects that may be rotating, orbiting, and
+    // even orbiting another thing that is orbiting something etc. In short, we have a chain of orbits that we must calculate
+    // and then finally we must consider the rotation of the object itself.
+
     public void FixedUpdate() {
         float dt = Time.fixedDeltaTime;
 
-        // Update all orbiters
-        Orbiter[] orbiters = FindObjectsOfType<Orbiter>();
+        foreach (var deathTimer in FindObjectsOfType<DeathTimer>()) {
+            deathTimer.Value -= dt;
 
-        foreach (var orbiter in orbiters) {
+            if (deathTimer.Value <= 0) {
+                Destroy(deathTimer.gameObject);
+            }
+        }
+
+        // Update all orbiters
+        foreach (var orbiter in FindObjectsOfType<Orbiter>()) {
             orbiter.Radians = (orbiter.Radians + (float)orbiter.Direction * TWO_PI / orbiter.Period * dt) % (TWO_PI);
             orbiter.transform.localPosition = orbiter.Radius * UnitCircle(orbiter.Radians);
         }
 
         // Update all rotators
-        Rotator[] rotators = FindObjectsOfType<Rotator>();
-
-        foreach (var rotator in rotators) {
+        foreach (var rotator in FindObjectsOfType<Rotator>()) {
             rotator.Radians = (rotator.Radians + (float)rotator.Direction * TWO_PI / rotator.Period * dt) % (TWO_PI);
-            rotator.transform.localRotation = Quaternion.AngleAxis(-rotator.Radians * 57.2958f, Vector3.up);
+            rotator.transform.localRotation = Quaternion.AngleAxis(-rotator.Radians * Mathf.Rad2Deg, Vector3.up);
         }
 
-        // How does a skyhook work? 
-        // In the real world, there are multiple components to a successful skyhook system
-        // Fundamentally, you must successfully intercept the skyhook, then ride the skyhook until
-        // you have a trajectory that is roughly aligned with your destination's FUTURE
-        // position/orientation based on your current speed. You then release from the skyhook and 
-        // mostly coast or lightly navigate towards your destination until you are relatively close at 
-        // which time you take active control back to successfully intercept your target
-
-        // This neatly divides the skyhook system into three phases:
-        //      Intercepting the skyhook from your current position
-        //      Riding the skyhook waiting for a sufficiently safe path towards your destination's future orientation
-        //      Intercepting your destination from your current position 
-
-        // This implies that we will need to be able to calculate the future position and orientation of objects in question
-        // This neccessarily requires us to make certain assumptions about the behaviors of these objects. Long story short,
-        // we need to assume that they have stable or predictable motions and thus are assumed to be restricted to orbit
-        // and rotation. However, we need to be able to answer these questions for objects that may be rotating, orbiting, and
-        // even orbiting another thing that is orbiting something etc. In short, we have a chain of orbits that we must calculate
-        // and then finally we must consider the rotation of the object itself.
-
-        OrbitPredictor[] orbitPredictors = FindObjectsOfType<OrbitPredictor>();
+        foreach (var velocity in FindObjectsOfType<Velocity>()) {
+            velocity.transform.position += dt * (Vector3)velocity.Value;
+        }
 
         float3 FutureLocalPosition(Orbiter o, float t) {
             float radians = (o.Radians + (float)o.Direction * TWO_PI / o.Period * t) % (TWO_PI);
@@ -82,7 +91,7 @@ public class RaytracingTestController : MonoBehaviour {
             while (transform != null) {
                 if (transform.TryGetComponent<Rotator>(out Rotator r)) {
                     float radians = FutureLocalRotation(r, t);
-                    float degrees = radians * 57.2958f; // approximation for conversion to degrees
+                    float degrees = radians * Mathf.Rad2Deg; // approximation for conversion to degrees
 
                     futurePosition = Quaternion.AngleAxis(-degrees, Vector3.up) * (Vector3)futurePosition;
                 }
@@ -100,27 +109,36 @@ public class RaytracingTestController : MonoBehaviour {
             return (FuturePosition(transform, t + deltaTime) - FuturePosition(transform, t - deltaTime)) / (2 * deltaTime);
         }
 
-        foreach (var orbitPredictor in orbitPredictors) {
+        foreach (var orbitPredictor in FindObjectsOfType<OrbitPredictor>()) {
             int count = orbitPredictor.LineRenderer.positionCount;
             for (int i = 0; i < count; i++) {
                 float time = (float)i / (float)(count - 1) * OrbitPredictorTimeInTheFuture;
+                float3 velocity = Trajectory(orbitPredictor.transform, 0, .001f);
+                float3 trajectory = normalize(velocity);
+                float3 toTarget = new float3(0,0,0) - (float3)orbitPredictor.transform.position;
+                float3 towardsTarget = normalize(toTarget);
+                float trajectoryDotTowardsTarget = dot(trajectory, towardsTarget);
+                bool isAcceptableRange = trajectoryDotTowardsTarget >= RangeAccuracy;
 
                 orbitPredictor.LineRenderer.SetPosition(i, FuturePosition(orbitPredictor.transform, time));
+                Debug.DrawRay(orbitPredictor.transform.position, trajectory, isAcceptableRange ? Color.green : Color.blue);
+                
+                if (isAcceptableRange) {
+                    Velocity launchedObject = Instantiate(LaunchablePrefab, orbitPredictor.transform.position, Quaternion.identity);
+
+                    launchedObject.Value = velocity;
+                }
             }
         }
 
-
         // Update all target reflectors
-        TargetReflector[] targetReflectors = FindObjectsOfType<TargetReflector>();
-
-        foreach (var targetreflector in targetReflectors) {
+        foreach (var targetreflector in FindObjectsOfType<TargetReflector>()) {
             float3 toSource = targetreflector.Source.transform.position - targetreflector.transform.position;
             float3 toTarget = targetreflector.Target.transform.position - targetreflector.transform.position;
             float3 halfway = normalize((normalize(toSource) + normalize(toTarget)) / 2);
 
             targetreflector.transform.forward = halfway;
         }
-
 
         // Raytracing for light sources
         RaytracingSystem.LightSources = FindObjectsOfType<LightSource>();
@@ -150,15 +168,13 @@ public class RaytracingTestController : MonoBehaviour {
         }
 
         // Render orbits
-        OrbitRenderingSystem.Orbiters = orbiters;
-        OrbitRenderingSystem.Count = orbiters.Length;
+        OrbitRenderingSystem.Orbiters = FindObjectsOfType<Orbiter>();
+        OrbitRenderingSystem.Count = OrbitRenderingSystem.Orbiters.Length;
         OrbitRenderingSystem.Schedule();
 
         // Update the spacefield 
-        NormalizedMass[] normalizedMasses = FindObjectsOfType<NormalizedMass>();
-
-        SpaceField.Count = normalizedMasses.Length;
-        SpaceField.NormalizedMasses = normalizedMasses;
+        SpaceField.NormalizedMasses = FindObjectsOfType<NormalizedMass>();
+        SpaceField.Count = SpaceField.NormalizedMasses.Length;
         SpaceField.Schedule();
     }
 }

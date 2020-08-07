@@ -398,13 +398,11 @@ public class Game : MonoBehaviour {
 
     // Render the orbits 
     if (Board) {
-      /*
       Orbiter[] orbiters = Board.GetComponentsInChildren<Orbiter>();
 
       OrbitRenderingSystem.Orbiters = orbiters;
       OrbitRenderingSystem.Count = orbiters.Length;
-      OrbitRenderingSystem.Schedule();
-      */
+      // OrbitRenderingSystem.Schedule();
     }
 
     // Update the spacefield
