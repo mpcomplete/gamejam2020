@@ -41,9 +41,11 @@ public class RaytracingSystem : MonoBehaviour {
             float3 worldHeading = normalize(source.transform.TransformVector(localHeading));
             Ray ray = new Ray(source.transform.position, worldHeading);
 
-            if (Physics.Raycast(ray, out RaycastHit hit, MAX_RAY_DISTANCE) && hit.transform.GetComponent<Reflector>()) {
+            if (Physics.Raycast(ray, out RaycastHit hit, MAX_RAY_DISTANCE)) {
                 Traces.Add(new Trace { From = ray.origin, To = hit.point, Energy = source.Energy });
-                Bounce(MAX_BOUNCES, source.Energy, ray, hit);
+                if (hit.transform.GetComponent<Reflector>()) {
+                    Bounce(MAX_BOUNCES, source.Energy, ray, hit);
+                }
             } else {
                 Traces.Add(new Trace { From = ray.origin, To = ray.direction * MAX_RAY_DISTANCE, Energy = source.Energy });
             }
@@ -79,11 +81,6 @@ public class RaytracingSystem : MonoBehaviour {
         return vs;
     }
 
-    // TODO: Use these to avoid allocations
-    float3[] reflectionVectors = new float3[128];
-    float[] reflectionVectorEnergies = new float[128];
-    float3[] normalizedReflectionVectorEnergies = new float3[128];
-
     void Bounce(int depth, float incidentEnergy, Ray incidentRay, RaycastHit incidentHit) {
         if (depth <= 0)
             return;
@@ -98,36 +95,5 @@ public class RaytracingSystem : MonoBehaviour {
         } else {
             Traces.Add(new Trace { From = ray.origin, To = ray.direction * MAX_RAY_DISTANCE, Energy = energy });
         }
-
-
-        /*
-        float3 normal = incidentHit.normal;
-        float3 tangent = Tangent(normal);
-        float3 binormal = Binormal(normal, tangent);
-        float3 reflectionVector = Reflect(incidentHit.normal, -incidentRay.direction);
-        float3[] reflectionVectors = ReflectionVectors(tangent, binormal, normal, -incidentRay.direction, TOTAL_HEADINGS / 2 + 1);
-        AnimationCurve reflectionCurve = incidentHit.transform.GetComponent<RaystrikeableBody>().RayMaterial.ReflectionCurve;
-        float[] reflectionVectorEnergies = reflectionVectors.Select(v => reflectionCurve.Evaluate(dot(reflectionVector, v))).ToArray();
-
-        float totalReflectionEnergy = reflectionVectorEnergies.Sum();
-
-        if (totalReflectionEnergy == 0)
-            return;
-
-        float[] normalizedReflectionVectorEnergies = reflectionVectorEnergies.Select(v => v / totalReflectionEnergy).ToArray();
-
-        for (int i = 0; i < reflectionVectors.Length; i++) {
-            float3 v = reflectionVectors[i];
-            float energy = normalizedReflectionVectorEnergies[i] * incidentEnergy;
-            Ray ray = new Ray(incidentHit.point, v);
-
-            if (Physics.Raycast(ray, out RaycastHit hit, MAX_RAY_DISTANCE)) {
-                Traces.Add(new Trace { From = ray.origin, To = hit.point, Energy = energy });
-                Bounce(depth - 1, energy, ray, hit);
-            } else {
-                Traces.Add(new Trace { From = ray.origin, To = ray.direction * MAX_RAY_DISTANCE, Energy = energy });
-            }
-        }
-        */
     }
 }

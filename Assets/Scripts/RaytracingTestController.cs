@@ -13,6 +13,7 @@ public class RaytracingTestController : MonoBehaviour {
     public float ScalePower = .1f;
     public AnimationCurve EnergyToIntensityCurve = AnimationCurve.Linear(0, 3, 1, 5);
     public AnimationCurve EnergyToWidthCurve = AnimationCurve.Linear(0, .05f, 1, .1f);
+    public float G = 100f;
 
     [Range(0, 10)]
     public float OrbitPredictorTimeInTheFuture = 1f;
@@ -20,11 +21,38 @@ public class RaytracingTestController : MonoBehaviour {
 
     public Velocity LaunchablePrefab;
 
+    const int MAX_LAUNCHABLES = 4096;
+    public int LaunchableObjectPoolIndex = 0;
+    public Velocity[] LaunchableObjectPool = new Velocity[MAX_LAUNCHABLES];
+    public DeathTimer[] DeathTimers;
+    public Rotator[] Rotators;
+    public Orbiter[] Orbiters;
+    public Geosynchronous[] Geosynchronouses;
+    public OrbitPredictor[] OrbitPredictors;
+    public TargetReflector[] TargetReflectors;
+    public LightSource[] LightSources;
+    public NormalizedMass[] NormalizedMasses;
+
+
     public void Start() {
         // TODO: This is a stupid hack because this system is half-assed
         foreach (var og in FindObjectsOfType<OrbitGroup>()) {
             og.Position();
         }
+
+        // create a shitload of the flying things
+        LaunchableObjectPool = new Velocity[MAX_LAUNCHABLES];
+        for (int i = 0; i < LaunchableObjectPool.Length; i++) {
+            LaunchableObjectPool[i] = Instantiate(LaunchablePrefab);
+        }
+        DeathTimers = FindObjectsOfType<DeathTimer>();
+        Rotators = FindObjectsOfType<Rotator>();
+        Orbiters = FindObjectsOfType<Orbiter>();
+        Geosynchronouses = FindObjectsOfType<Geosynchronous>();
+        OrbitPredictors = FindObjectsOfType<OrbitPredictor>();
+        TargetReflectors = FindObjectsOfType<TargetReflector>();
+        LightSources = FindObjectsOfType<LightSource>();
+        NormalizedMasses = FindObjectsOfType<NormalizedMass>();
     }
 
     // How does a skyhook work? 
@@ -47,35 +75,54 @@ public class RaytracingTestController : MonoBehaviour {
     // even orbiting another thing that is orbiting something etc. In short, we have a chain of orbits that we must calculate
     // and then finally we must consider the rotation of the object itself.
 
+    // Here are the simple equations that relate orbit height to speed:
+    // Vtangent = sqrt(LargerMass * GravitationalConstant / Radius)
+
     public void FixedUpdate() {
         float dt = Time.fixedDeltaTime;
 
-        foreach (var deathTimer in FindObjectsOfType<DeathTimer>()) {
+        foreach (var deathTimer in DeathTimers) {
             deathTimer.Value -= dt;
 
             if (deathTimer.Value <= 0) {
-                Destroy(deathTimer.gameObject);
+                deathTimer.gameObject.SetActive(false);
+            }
+        }
+
+        // Set the required radius of all orbiters that are geosynchronous
+        foreach (var geosynchronous in Geosynchronouses) {
+            if (geosynchronous.TryGetComponent<Orbiter>(out Orbiter orbiter)) {
+                const float MASS = 1;
+
+                orbiter.Radius = Orbiter.RequiredRadiusForPeriod(MASS, G, geosynchronous.Rotator.Period);
             }
         }
 
         // Update all orbiters
-        foreach (var orbiter in FindObjectsOfType<Orbiter>()) {
-            orbiter.Radians = (orbiter.Radians + (float)orbiter.Direction * TWO_PI / orbiter.Period * dt) % (TWO_PI);
+        foreach (var orbiter in Orbiters) {
+            // TODO: This mass value is stubbed out here but probably should be taken from the body itself?
+            const float MASS = 1;
+            float period = Orbiter.Period(orbiter, MASS, G);
+
+            orbiter.Radians = (orbiter.Radians + (float)orbiter.Direction * TWO_PI / period * dt) % (TWO_PI);
             orbiter.transform.localPosition = orbiter.Radius * UnitCircle(orbiter.Radians);
         }
 
         // Update all rotators
-        foreach (var rotator in FindObjectsOfType<Rotator>()) {
+        foreach (var rotator in Rotators) {
             rotator.Radians = (rotator.Radians + (float)rotator.Direction * TWO_PI / rotator.Period * dt) % (TWO_PI);
             rotator.transform.localRotation = Quaternion.AngleAxis(-rotator.Radians * Mathf.Rad2Deg, Vector3.up);
         }
 
-        foreach (var velocity in FindObjectsOfType<Velocity>()) {
+        foreach (var velocity in LaunchableObjectPool) {
             velocity.transform.position += dt * (Vector3)velocity.Value;
         }
 
         float3 FutureLocalPosition(Orbiter o, float t) {
-            float radians = (o.Radians + (float)o.Direction * TWO_PI / o.Period * t) % (TWO_PI);
+            // TODO: Mass stubbed out here... should come from the body?
+            const float MASS = 1;
+            float period = Orbiter.Period(o, MASS, G);
+            float radians = (o.Radians + (float)o.Direction * TWO_PI / period * t) % (TWO_PI);
             float3 futurePosition = o.Radius * UnitCircle(radians);
 
             return futurePosition;
@@ -88,28 +135,30 @@ public class RaytracingTestController : MonoBehaviour {
         float3 FuturePosition(Transform transform, float t) {
             float3 futurePosition = new float3(0, 0, 0);
 
-            while (transform != null) {
-                if (transform.TryGetComponent<Rotator>(out Rotator r)) {
-                    float radians = FutureLocalRotation(r, t);
-                    float degrees = radians * Mathf.Rad2Deg; // approximation for conversion to degrees
-
-                    futurePosition = Quaternion.AngleAxis(-degrees, Vector3.up) * (Vector3)futurePosition;
-                }
-                if (transform.TryGetComponent<Orbiter>(out Orbiter o)) {
-                    futurePosition += FutureLocalPosition(o, t);
-                } else {
-                    futurePosition += (float3)transform.localPosition;
-                }
-                transform = transform.parent;
-            }
-            return futurePosition;
-        }
-
-        float3 Trajectory(Transform transform, float t, float deltaTime) {
+            while (transform != null) { 
+                if (transform.TryGetComponent<Rotator>(out Rotator r)) { 
+                    float radians = FutureLocalRotation(r, t); 
+                    float degrees = radians * Mathf.Rad2Deg; // approximation for conversion to degrees 
+                    
+                    futurePosition = Quaternion.AngleAxis(-degrees, Vector3.up) * (Vector3)futurePosition; 
+                } 
+                
+                if (transform.TryGetComponent<Orbiter>(out Orbiter o)) { 
+                    futurePosition += FutureLocalPosition(o, t); 
+                } else { 
+                    futurePosition += (float3)transform.localPosition; 
+                } 
+                
+                transform = transform.parent; 
+            } 
+            return futurePosition; 
+        } 
+        
+        float3 Trajectory(Transform transform, float t, float deltaTime) { 
             return (FuturePosition(transform, t + deltaTime) - FuturePosition(transform, t - deltaTime)) / (2 * deltaTime);
         }
 
-        foreach (var orbitPredictor in FindObjectsOfType<OrbitPredictor>()) {
+        foreach (var orbitPredictor in OrbitPredictors) {
             int count = orbitPredictor.LineRenderer.positionCount;
             for (int i = 0; i < count; i++) {
                 float time = (float)i / (float)(count - 1) * OrbitPredictorTimeInTheFuture;
@@ -121,18 +170,21 @@ public class RaytracingTestController : MonoBehaviour {
                 bool isAcceptableRange = trajectoryDotTowardsTarget >= RangeAccuracy;
 
                 orbitPredictor.LineRenderer.SetPosition(i, FuturePosition(orbitPredictor.transform, time));
-                Debug.DrawRay(orbitPredictor.transform.position, trajectory, isAcceptableRange ? Color.green : Color.blue);
                 
                 if (isAcceptableRange) {
-                    Velocity launchedObject = Instantiate(LaunchablePrefab, orbitPredictor.transform.position, Quaternion.identity);
+                    Velocity launchedObject = LaunchableObjectPool[LaunchableObjectPoolIndex];
 
+                    LaunchableObjectPoolIndex = (LaunchableObjectPoolIndex + 1) % LaunchableObjectPool.Length;
+                    launchedObject.gameObject.SetActive(true);
+                    launchedObject.GetComponent<DeathTimer>().Value = 5f;
+                    launchedObject.transform.position = orbitPredictor.transform.position;
                     launchedObject.Value = velocity;
                 }
             }
         }
 
         // Update all target reflectors
-        foreach (var targetreflector in FindObjectsOfType<TargetReflector>()) {
+        foreach (var targetreflector in TargetReflectors) {
             float3 toSource = targetreflector.Source.transform.position - targetreflector.transform.position;
             float3 toTarget = targetreflector.Target.transform.position - targetreflector.transform.position;
             float3 halfway = normalize((normalize(toSource) + normalize(toTarget)) / 2);
@@ -141,7 +193,7 @@ public class RaytracingTestController : MonoBehaviour {
         }
 
         // Raytracing for light sources
-        RaytracingSystem.LightSources = FindObjectsOfType<LightSource>();
+        RaytracingSystem.LightSources = LightSources;
         RaytracingSystem.LightSourceCount = RaytracingSystem.LightSources.Length;
         RaytracingSystem.Schedule();
 
@@ -168,12 +220,12 @@ public class RaytracingTestController : MonoBehaviour {
         }
 
         // Render orbits
-        OrbitRenderingSystem.Orbiters = FindObjectsOfType<Orbiter>();
+        OrbitRenderingSystem.Orbiters = Orbiters;
         OrbitRenderingSystem.Count = OrbitRenderingSystem.Orbiters.Length;
         OrbitRenderingSystem.Schedule();
 
         // Update the spacefield 
-        SpaceField.NormalizedMasses = FindObjectsOfType<NormalizedMass>();
+        SpaceField.NormalizedMasses = NormalizedMasses;
         SpaceField.Count = SpaceField.NormalizedMasses.Length;
         SpaceField.Schedule();
     }
