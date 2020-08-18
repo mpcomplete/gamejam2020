@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static MathUtils;
 
@@ -400,7 +401,7 @@ public class Game : MonoBehaviour {
     if (Board) {
       Orbiter[] orbiters = Board.GetComponentsInChildren<Orbiter>();
 
-      OrbitRenderingSystem.Orbiters = orbiters;
+      OrbitRenderingSystem.Orbiters = orbiters.ToList();
       OrbitRenderingSystem.Count = orbiters.Length;
       // OrbitRenderingSystem.Schedule();
     }

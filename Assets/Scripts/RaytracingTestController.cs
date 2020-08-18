@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 using Unity.Mathematics;
 using static Unity.Mathematics.math;
 using static MathUtils;
@@ -18,21 +21,24 @@ public class RaytracingTestController : MonoBehaviour {
     [Range(0, 10)]
     public float OrbitPredictorTimeInTheFuture = 1f;
     public float RangeAccuracy = .9f;
+    public float SkyHookTransitionEpsilon = 1e-4f;
+    public float MassFactor = 100f;
+    public float3 InitialHeading = float3(0,0,0);
+    public float InitialSpeed;
 
-    public Velocity LaunchablePrefab;
-
-    const int MAX_LAUNCHABLES = 4096;
-    public int LaunchableObjectPoolIndex = 0;
-    public Velocity[] LaunchableObjectPool = new Velocity[MAX_LAUNCHABLES];
-    public DeathTimer[] DeathTimers;
+    public List<Emitter> Emitters;
+    public List<Velocity> Velocities;
+    public List<DeathTimer> DeathTimers;
+    public List<Orbiter> Orbiters;
+    public List<FreeBody> FreeBodies;
+    public List<Traveler> Travelers;
     public Rotator[] Rotators;
-    public Orbiter[] Orbiters;
     public Geosynchronous[] Geosynchronouses;
     public OrbitPredictor[] OrbitPredictors;
     public TargetReflector[] TargetReflectors;
     public LightSource[] LightSources;
     public NormalizedMass[] NormalizedMasses;
-
+    public SkyHookRocket[] SkyHookRockets;
 
     public void Start() {
         // TODO: This is a stupid hack because this system is half-assed
@@ -40,53 +46,229 @@ public class RaytracingTestController : MonoBehaviour {
             og.Position();
         }
 
-        // create a shitload of the flying things
-        LaunchableObjectPool = new Velocity[MAX_LAUNCHABLES];
-        for (int i = 0; i < LaunchableObjectPool.Length; i++) {
-            LaunchableObjectPool[i] = Instantiate(LaunchablePrefab);
+        // TODO: kind of a hacky way to set courses for all these predictive chasers
+        foreach (var chaser in FindObjectsOfType<PredictiveChaser>()) {
+            float tf = 3f;
+            float3 p0 = chaser.transform.position;
+            float3 v0 = InitialHeading * InitialSpeed;
+            float3 pf = FuturePosition(chaser.Target, tf);
+            float3 vf = FutureVelocity(chaser.Target, tf);
+
+            chaser.TimeElapsed = 0;
+            chaser.Trajectory = PathSystem.TrajectoryFrom(tf, p0, v0, pf, vf);
         }
-        DeathTimers = FindObjectsOfType<DeathTimer>();
+
+        Emitters = FindObjectsOfType<Emitter>().ToList();
+        FreeBodies = FindObjectsOfType<FreeBody>().ToList();
+        Travelers = FindObjectsOfType<Traveler>().ToList();
+        Orbiters = FindObjectsOfType<Orbiter>().ToList();
+        Velocities = FindObjectsOfType<Velocity>().ToList();
+        DeathTimers = FindObjectsOfType<DeathTimer>().ToList();
+
         Rotators = FindObjectsOfType<Rotator>();
-        Orbiters = FindObjectsOfType<Orbiter>();
         Geosynchronouses = FindObjectsOfType<Geosynchronous>();
         OrbitPredictors = FindObjectsOfType<OrbitPredictor>();
         TargetReflectors = FindObjectsOfType<TargetReflector>();
         LightSources = FindObjectsOfType<LightSource>();
         NormalizedMasses = FindObjectsOfType<NormalizedMass>();
+        SkyHookRockets = FindObjectsOfType<SkyHookRocket>();
     }
 
-    // How does a skyhook work? 
-    // In the real world, there are multiple components to a successful skyhook system
-    // Fundamentally, you must successfully intercept the skyhook, then ride the skyhook until
-    // you have a trajectory that is roughly aligned with your destination's FUTURE
-    // position/orientation based on your current speed. You then release from the skyhook and 
-    // mostly coast or lightly navigate towards your destination until you are relatively close at 
-    // which time you take active control back to successfully intercept your target
+    float3 FutureLocalPosition(Orbiter o, float t) {
+        // TODO: Mass stubbed out here... should come from the body?
+        const float MASS = 1;
+        float period = Orbiter.Period(o, MASS, G);
+        float radians = (o.Radians + (float)o.Direction * TWO_PI / period * t) % (TWO_PI);
+        float3 futurePosition = o.Radius * UnitCircle(radians);
 
-    // This neatly divides the skyhook system into three phases:
-    //      Intercepting the skyhook from your current position
-    //      Riding the skyhook waiting for a sufficiently safe path towards your destination's future orientation
-    //      Intercepting your destination from your current position 
+        return futurePosition;
+    }
 
-    // This implies that we will need to be able to calculate the future position and orientation of objects in question
-    // This neccessarily requires us to make certain assumptions about the behaviors of these objects. Long story short,
-    // we need to assume that they have stable or predictable motions and thus are assumed to be restricted to orbit
-    // and rotation. However, we need to be able to answer these questions for objects that may be rotating, orbiting, and
-    // even orbiting another thing that is orbiting something etc. In short, we have a chain of orbits that we must calculate
-    // and then finally we must consider the rotation of the object itself.
+    float FutureLocalRotation(Rotator r, float t) {
+        return (r.Radians + (float)r.Direction * TWO_PI / r.Period * t) % (TWO_PI);
+    }
 
-    // Here are the simple equations that relate orbit height to speed:
-    // Vtangent = sqrt(LargerMass * GravitationalConstant / Radius)
+    float3 FuturePosition(Transform transform, float t) {
+        float3 futurePosition = new float3(0, 0, 0);
+
+        while (transform != null) { 
+            if (transform.TryGetComponent<Rotator>(out Rotator r)) { 
+                float radians = FutureLocalRotation(r, t); 
+                float degrees = radians * Mathf.Rad2Deg; // approximation for conversion to degrees 
+                
+                futurePosition = Quaternion.AngleAxis(-degrees, Vector3.up) * (Vector3)futurePosition; 
+            } 
+            
+            if (transform.TryGetComponent<Orbiter>(out Orbiter o)) { 
+                futurePosition += FutureLocalPosition(o, t); 
+            } else { 
+                futurePosition += (float3)transform.localPosition; 
+            } 
+            
+            transform = transform.parent; 
+        } 
+        return futurePosition; 
+    } 
+    
+    float3 FutureVelocity(Transform transform, float t) { 
+        const float dt = .01f;
+
+        return (FuturePosition(transform, t + dt) - FuturePosition(transform, t - dt)) / (2 * dt);
+    }
+
+    public struct Course {
+        public float3 Origin;
+        public float3 Destination;
+        public float Duration;
+    }
+
+    Course SetACourse(Transform subject, Transform target, float minTimeInSeconds, float maximumTimeInSeconds) {
+        int count = 100;
+        float dt = (maximumTimeInSeconds - minTimeInSeconds) / (float)count;
+        float duration = float.MaxValue;
+        float nearestSquaredDistance = float.MaxValue;
+        float3 destination = float3(0, 0, 0);
+
+        for (var i = 0; i < count; i++) {
+            float seconds = minTimeInSeconds + (float)i * dt;
+            float3 futureTargetPosition = FuturePosition(target, seconds);
+            float3 futureTargetDelta = futureTargetPosition - (float3)subject.transform.position;
+            float squaredDistanceToFutureTargetPosition = length(futureTargetDelta);
+
+            if (squaredDistanceToFutureTargetPosition < nearestSquaredDistance) {
+                nearestSquaredDistance = squaredDistanceToFutureTargetPosition;
+                destination = futureTargetPosition;
+                duration = seconds;
+            }
+        }
+        return new Course { Origin = subject.transform.position, Destination = destination, Duration = duration };
+    }
+
+    void RenderPath(float3[] waypoints) {
+        for (int i = 1; i < waypoints.Length; i++) {
+            Debug.DrawLine(waypoints[i-1], waypoints[i], Color.white);
+        }
+    }
+
+    public void Register(GameObject go) {
+        if (go.TryGetComponent<Velocity>(out Velocity v)) {
+            Velocities.Add(v);
+        }
+        if (go.TryGetComponent<DeathTimer>(out DeathTimer d)) {
+            DeathTimers.Add(d);
+        }
+        if (go.TryGetComponent<FreeBody>(out FreeBody f)) {
+            FreeBodies.Add(f);
+        }
+    }
+
+    public void UnRegister(GameObject go) {
+        if (go.TryGetComponent<Velocity>(out Velocity v)) {
+            Velocities.Remove(v);
+        }
+        if (go.TryGetComponent<DeathTimer>(out DeathTimer d)) {
+            DeathTimers.Remove(d);
+        }
+        if (go.TryGetComponent<FreeBody>(out FreeBody f)) {
+            FreeBodies.Remove(f);
+        }
+    }
 
     public void FixedUpdate() {
         float dt = Time.fixedDeltaTime;
 
-        foreach (var deathTimer in DeathTimers) {
-            deathTimer.Value -= dt;
+        foreach (var emitter in Emitters) {
+            emitter.TimeTillEmission -= dt;
 
-            if (deathTimer.Value <= 0) {
-                deathTimer.gameObject.SetActive(false);
+            if (emitter.TimeTillEmission <= 0) {
+                GameObject emittee = Instantiate(emitter.Emittee, emitter.transform.position, emitter.transform.rotation);
+
+                Register(emittee);
+                if (emittee.TryGetComponent<Velocity>(out Velocity v)) {
+                    v.Value = emitter.transform.forward * emitter.EmissionSpeed;
+                }
+                // TODO: note... this is not totally correct as we could slightly overshoot...
+                // TODO: consider fixing this AND the initial position based on this slight overshoot to get perfect behavior
+                emitter.TimeTillEmission = emitter.EmissionPeriod; 
             }
+        }
+
+        // Update deathtimers: modifies component arrays
+        for (int i = 0; i < DeathTimers.Count; i++) {
+            DeathTimer deathTimer = DeathTimers[i];
+
+            deathTimer.Value -= dt;
+            if (deathTimer.Value <= 0) {
+                UnRegister(deathTimer.gameObject);
+                Destroy(deathTimer.gameObject);
+                i--;
+            }
+        }
+
+        // Update all free bodies
+        foreach (var freebody in FreeBodies) {
+            Velocity v = freebody.GetComponent<Velocity>();
+
+            foreach (var normalizedMass in NormalizedMasses) {
+                float3 delta = normalizedMass.transform.position - freebody.transform.position;
+                float3 direction = normalize(delta);
+                float d = length(delta);
+
+                v.Value += direction * dt * normalizedMass.Value * MassFactor * G / (d * d);
+            }
+        }
+
+        // Update all travelers
+        // A traveler has a destination towards which they move while also attempting to avoid obstacles
+        // The traveler's destination may be itself a predictable mover in which case the traveler will 
+        // "skate to where the puck is going" and pick a heading that intercepts the destination at some future
+        // time. To make this system as easy to write as possible, we assume that the time in the future 
+        // is calculated by some relationship between the vehicle's top speed and possibly some relationship
+        // between current velocity and the direction towards the 
+
+        // There are several versions of this system that will offer better and better behavior
+        // The stupid chaser with fixed speed
+        //      Constantly tries to move towards the CURRENT location of their target
+        foreach (var chaser in FindObjectsOfType<Chaser>()) {
+            float3 delta = chaser.Target.position - chaser.transform.position;
+            float3 direction = normalize(chaser.Target.position - chaser.transform.position);
+            float remainingDistance = min(length(delta), chaser.MaxSpeed * dt);
+
+            chaser.transform.position = chaser.transform.position + remainingDistance * (Vector3)direction;
+            Debug.DrawLine(chaser.transform.position, chaser.Target.position, Color.red);
+        }
+
+        // The inertial chaser
+        //      Constantly tries to move towards the CURRENT location of their target but with a fixed amount of possible heading change
+        //      This chaser has a current velocity and a maximum amount of force it can apply in any direction to change its velocity 
+        foreach (var inertialChaser in FindObjectsOfType<InertialChaser>()) {
+            float3 delta = inertialChaser.Target.position - inertialChaser.transform.position;
+            float3 direction = normalize(inertialChaser.Target.position - inertialChaser.transform.position);
+
+            inertialChaser.Velocity += inertialChaser.MaximumForce * dt * direction;
+            inertialChaser.transform.position = inertialChaser.transform.position + dt * (Vector3)inertialChaser.Velocity;
+            Debug.DrawLine(inertialChaser.transform.position, inertialChaser.Target.position, Color.blue);
+        }
+
+        // The predictive chaser
+        //      Predicts the location of the target various times in the future
+        //      Chooses the first time where the distance to the object is within its range for that given time based on its max speed
+        //      Moves towards that future location at the required speed
+        var predictiveChasers = FindObjectsOfType<PredictiveChaser>();
+        foreach (var predictiveChaser in predictiveChasers) {
+            predictiveChaser.TimeElapsed += dt;
+            predictiveChaser.transform.position = PathSystem.PositionFromTrajectoryAtTime(predictiveChaser.Trajectory, predictiveChaser.TimeElapsed);
+        }
+        foreach (var predictiveChaser in predictiveChasers) {
+            if (predictiveChaser.TimeElapsed >= predictiveChaser.Trajectory.duration) {
+                predictiveChaser.transform.SetParent(predictiveChaser.Target, true);
+                predictiveChaser.transform.localPosition = Vector3.zero;
+                Destroy(predictiveChaser);
+            }
+        }
+
+        foreach (var traveler in Travelers) {
+            // every traveler needs to calculate the position of their target 
         }
 
         // Set the required radius of all orbiters that are geosynchronous
@@ -114,75 +296,6 @@ public class RaytracingTestController : MonoBehaviour {
             rotator.transform.localRotation = Quaternion.AngleAxis(-rotator.Radians * Mathf.Rad2Deg, Vector3.up);
         }
 
-        foreach (var velocity in LaunchableObjectPool) {
-            velocity.transform.position += dt * (Vector3)velocity.Value;
-        }
-
-        float3 FutureLocalPosition(Orbiter o, float t) {
-            // TODO: Mass stubbed out here... should come from the body?
-            const float MASS = 1;
-            float period = Orbiter.Period(o, MASS, G);
-            float radians = (o.Radians + (float)o.Direction * TWO_PI / period * t) % (TWO_PI);
-            float3 futurePosition = o.Radius * UnitCircle(radians);
-
-            return futurePosition;
-        }
-
-        float FutureLocalRotation(Rotator r, float t) {
-            return (r.Radians + (float)r.Direction * TWO_PI / r.Period * t) % (TWO_PI);
-        }
-
-        float3 FuturePosition(Transform transform, float t) {
-            float3 futurePosition = new float3(0, 0, 0);
-
-            while (transform != null) { 
-                if (transform.TryGetComponent<Rotator>(out Rotator r)) { 
-                    float radians = FutureLocalRotation(r, t); 
-                    float degrees = radians * Mathf.Rad2Deg; // approximation for conversion to degrees 
-                    
-                    futurePosition = Quaternion.AngleAxis(-degrees, Vector3.up) * (Vector3)futurePosition; 
-                } 
-                
-                if (transform.TryGetComponent<Orbiter>(out Orbiter o)) { 
-                    futurePosition += FutureLocalPosition(o, t); 
-                } else { 
-                    futurePosition += (float3)transform.localPosition; 
-                } 
-                
-                transform = transform.parent; 
-            } 
-            return futurePosition; 
-        } 
-        
-        float3 Trajectory(Transform transform, float t, float deltaTime) { 
-            return (FuturePosition(transform, t + deltaTime) - FuturePosition(transform, t - deltaTime)) / (2 * deltaTime);
-        }
-
-        foreach (var orbitPredictor in OrbitPredictors) {
-            int count = orbitPredictor.LineRenderer.positionCount;
-            for (int i = 0; i < count; i++) {
-                float time = (float)i / (float)(count - 1) * OrbitPredictorTimeInTheFuture;
-                float3 velocity = Trajectory(orbitPredictor.transform, 0, .001f);
-                float3 trajectory = normalize(velocity);
-                float3 toTarget = new float3(0,0,0) - (float3)orbitPredictor.transform.position;
-                float3 towardsTarget = normalize(toTarget);
-                float trajectoryDotTowardsTarget = dot(trajectory, towardsTarget);
-                bool isAcceptableRange = trajectoryDotTowardsTarget >= RangeAccuracy;
-
-                orbitPredictor.LineRenderer.SetPosition(i, FuturePosition(orbitPredictor.transform, time));
-                
-                if (isAcceptableRange) {
-                    Velocity launchedObject = LaunchableObjectPool[LaunchableObjectPoolIndex];
-
-                    LaunchableObjectPoolIndex = (LaunchableObjectPoolIndex + 1) % LaunchableObjectPool.Length;
-                    launchedObject.gameObject.SetActive(true);
-                    launchedObject.GetComponent<DeathTimer>().Value = 5f;
-                    launchedObject.transform.position = orbitPredictor.transform.position;
-                    launchedObject.Value = velocity;
-                }
-            }
-        }
-
         // Update all target reflectors
         foreach (var targetreflector in TargetReflectors) {
             float3 toSource = targetreflector.Source.transform.position - targetreflector.transform.position;
@@ -190,6 +303,71 @@ public class RaytracingTestController : MonoBehaviour {
             float3 halfway = normalize((normalize(toSource) + normalize(toTarget)) / 2);
 
             targetreflector.transform.forward = halfway;
+        }
+
+        // Update Skyhook Rockets
+        foreach (var skyhookRocket in SkyHookRockets) {
+            switch (skyhookRocket.CurrentPlan) {
+                case SkyHookRocket.Plan.EnterOrbit:
+                skyhookRocket.TimeRemaining -= dt;
+
+                if (skyhookRocket.TimeRemaining <= 0) {
+                    Orbiter o = (Orbiter)skyhookRocket.gameObject.AddComponent(typeof(Orbiter));
+
+                    o.Radians = 0;
+                    o.Radius = skyhookRocket.orbitRadius;
+                    o.Direction = Orbiter.RotationalDirection.CounterClockwise;
+                    Orbiters.Add(o);
+                    skyhookRocket.TimeRemaining = 0;
+                    skyhookRocket.transform.SetParent(skyhookRocket.Origin, true);
+                    skyhookRocket.CurrentPlan = SkyHookRocket.Plan.RideTheHook;
+                } else {
+                    float3 currentPosition = skyhookRocket.transform.position;
+                    float3 futurePosition = FuturePosition(skyhookRocket.Origin, skyhookRocket.TimeRemaining);
+                    float fraction = skyhookRocket.TimeRemaining / skyhookRocket.TransitionTime;
+
+                    Debug.DrawLine(currentPosition, futurePosition, Color.red);
+                    skyhookRocket.TimeRemaining -= dt;
+                    skyhookRocket.transform.position = lerp(futurePosition, currentPosition, fraction);
+                }
+
+                break;
+
+                case SkyHookRocket.Plan.RideTheHook:
+                // Check if we should release 
+                if (Input.GetKeyDown(KeyCode.Space)) {
+                    float3 trajectory = FutureVelocity(skyhookRocket.transform, 0);
+                    Orbiter orbiter = skyhookRocket.GetComponent<Orbiter>();
+                    Velocity velocity = (Velocity)skyhookRocket.gameObject.AddComponent(typeof(Velocity));
+
+                    Orbiters.Remove(orbiter);
+                    Velocities.Add(velocity);
+                    Destroy(orbiter);
+                    velocity.Value = trajectory;
+                    skyhookRocket.transform.SetParent(null, true);
+                    skyhookRocket.transform.forward = normalize(trajectory);
+                    skyhookRocket.CurrentPlan = SkyHookRocket.Plan.Free;
+                }
+                break;
+            }
+        }
+
+        foreach (var velocity in Velocities) {
+            velocity.transform.position += dt * (Vector3)velocity.Value;
+        }
+
+        foreach (var orbitPredictor in OrbitPredictors) {
+            int count = orbitPredictor.LineRenderer.positionCount;
+            for (int i = 0; i < count; i++) {
+                float time = (float)i / (float)(count - 1) * OrbitPredictorTimeInTheFuture;
+                float3 velocity = FutureVelocity(orbitPredictor.transform, 0);
+                float3 trajectory = normalize(velocity);
+                float3 toTarget = new float3(0,0,0) - (float3)orbitPredictor.transform.position;
+                float3 towardsTarget = normalize(toTarget);
+                float trajectoryDotTowardsTarget = dot(trajectory, towardsTarget);
+
+                orbitPredictor.LineRenderer.SetPosition(i, FuturePosition(orbitPredictor.transform, time));
+            }
         }
 
         // Raytracing for light sources
@@ -221,7 +399,7 @@ public class RaytracingTestController : MonoBehaviour {
 
         // Render orbits
         OrbitRenderingSystem.Orbiters = Orbiters;
-        OrbitRenderingSystem.Count = OrbitRenderingSystem.Orbiters.Length;
+        OrbitRenderingSystem.Count = OrbitRenderingSystem.Orbiters.Count;
         OrbitRenderingSystem.Schedule();
 
         // Update the spacefield 

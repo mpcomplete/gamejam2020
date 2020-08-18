@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using static Unity.Mathematics.math;
 using static MathUtils;
 
 public class OrbitRenderingSystem : MonoBehaviour {
     public LineRenderer[] LineRenderers;
-    public Orbiter[] Orbiters;
+    public List<Orbiter> Orbiters;
     public int Count;
     public int PathResolution = 8;
 
