@@ -122,28 +122,6 @@ public class RaytracingTestController : MonoBehaviour {
         public float Duration;
     }
 
-    Course SetACourse(Transform subject, Transform target, float minTimeInSeconds, float maximumTimeInSeconds) {
-        int count = 100;
-        float dt = (maximumTimeInSeconds - minTimeInSeconds) / (float)count;
-        float duration = float.MaxValue;
-        float nearestSquaredDistance = float.MaxValue;
-        float3 destination = float3(0, 0, 0);
-
-        for (var i = 0; i < count; i++) {
-            float seconds = minTimeInSeconds + (float)i * dt;
-            float3 futureTargetPosition = FuturePosition(target, seconds);
-            float3 futureTargetDelta = futureTargetPosition - (float3)subject.transform.position;
-            float squaredDistanceToFutureTargetPosition = length(futureTargetDelta);
-
-            if (squaredDistanceToFutureTargetPosition < nearestSquaredDistance) {
-                nearestSquaredDistance = squaredDistanceToFutureTargetPosition;
-                destination = futureTargetPosition;
-                duration = seconds;
-            }
-        }
-        return new Course { Origin = subject.transform.position, Destination = destination, Duration = duration };
-    }
-
     void RenderPath(float3[] waypoints) {
         for (int i = 1; i < waypoints.Length; i++) {
             Debug.DrawLine(waypoints[i-1], waypoints[i], Color.white);
@@ -218,14 +196,6 @@ public class RaytracingTestController : MonoBehaviour {
             }
         }
 
-        // Update all travelers
-        // A traveler has a destination towards which they move while also attempting to avoid obstacles
-        // The traveler's destination may be itself a predictable mover in which case the traveler will 
-        // "skate to where the puck is going" and pick a heading that intercepts the destination at some future
-        // time. To make this system as easy to write as possible, we assume that the time in the future 
-        // is calculated by some relationship between the vehicle's top speed and possibly some relationship
-        // between current velocity and the direction towards the 
-
         // There are several versions of this system that will offer better and better behavior
         // The stupid chaser with fixed speed
         //      Constantly tries to move towards the CURRENT location of their target
@@ -236,18 +206,6 @@ public class RaytracingTestController : MonoBehaviour {
 
             chaser.transform.position = chaser.transform.position + remainingDistance * (Vector3)direction;
             Debug.DrawLine(chaser.transform.position, chaser.Target.position, Color.red);
-        }
-
-        // The inertial chaser
-        //      Constantly tries to move towards the CURRENT location of their target but with a fixed amount of possible heading change
-        //      This chaser has a current velocity and a maximum amount of force it can apply in any direction to change its velocity 
-        foreach (var inertialChaser in FindObjectsOfType<InertialChaser>()) {
-            float3 delta = inertialChaser.Target.position - inertialChaser.transform.position;
-            float3 direction = normalize(inertialChaser.Target.position - inertialChaser.transform.position);
-
-            inertialChaser.Velocity += inertialChaser.MaximumForce * dt * direction;
-            inertialChaser.transform.position = inertialChaser.transform.position + dt * (Vector3)inertialChaser.Velocity;
-            Debug.DrawLine(inertialChaser.transform.position, inertialChaser.Target.position, Color.blue);
         }
 
         // The predictive chaser
